@@ -1,0 +1,53 @@
+name: gostory
+description: Personal digital memory archive with usernames. Drop photos and notes at physical locations.
+publish_to: 'none'
+version: 1.1.0+2
+
+environment:
+  sdk: ^3.6.0
+  flutter: '>=3.27.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Camera
+  camera: ^0.11.0+2
+
+  # Location
+  geolocator: ^13.0.2
+
+  # Maps
+  # Utilities
+  path_provider: ^2.1.5
+  path: ^1.9.1
+  image_picker: ^1.2.3
+  url_launcher: ^6.3.2
+  flutter_map: ^8.3.2
+  latlong2: ^0.10.1
+  geocoding: ^4.0.0
+  firebase_core: ^4.15.0
+  firebase_auth: ^6.7.0
+  cloud_firestore: ^6.10.0
+  firebase_storage: ^13.6.0
+  firebase_messaging: ^16.7.0
+  firebase_app_check: ^0.4.8
+  connectivity_plus: ^7.3.1
+  cached_network_image: ^3.4.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.14
+  riverpod_generator: ^2.6.3
+  mocktail: ^1.0.4
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

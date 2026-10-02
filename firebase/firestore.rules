@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function owner(data) { return signedIn() && data.ownerId == request.auth.uid; }
+    function visible(id) {
+      let memory = get(/databases/$(database)/documents/memories/$(id)).data;
+      return signedIn() && (memory.public == true || owner(memory));
+    }
+    function validMemory(data) {
+      return data.keys().hasOnly(['id', 'ownerId', 'creatorId', 'creatorUsername', 'photoUrl', 'textNote', 'latitude', 'longitude', 'city', 'createdAt', 'viewCount', 'likeCount', 'commentCount', 'public', 'revision'])
+        && data.public is bool && data.textNote is string && data.textNote.size() > 0 && data.textNote.size() <= 100
+        && data.creatorId is string && data.creatorUsername is string && data.city is string
+        && get(/databases/$(database)/documents/profiles/$(data.creatorId)).data.ownerId == request.auth.uid
+        && data.creatorUsername == get(/databases/$(database)/documents/profiles/$(data.creatorId)).data.username
+        && data.createdAt is string && data.id is string && data.revision is int
+        && data.latitude is number && data.latitude >= -90 && data.latitude <= 90
+        && data.longitude is number && data.longitude >= -180 && data.longitude <= 180
+        && data.photoUrl == 'storage://photos/' + request.auth.uid + '/' + data.id;
+    }
+    match /memories/{id} {
+      allow get: if signedIn() && (!exists(/databases/$(database)/documents/memories/$(id)) || resource.data.public == true || owner(resource.data));
+      allow list: if signedIn() && (resource.data.public == true || owner(resource.data));
+      allow create: if owner(request.resource.data) && validMemory(request.resource.data)
+        && request.resource.data.id == id
+        && request.resource.data.viewCount == 0 && request.resource.data.likeCount == 0 && request.resource.data.commentCount == 0;
+      allow update: if owner(resource.data) && validMemory(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['public', 'textNote', 'city', 'creatorUsername', 'photoUrl', 'revision']);
+      allow delete: if owner(resource.data);
+      match /views/{uid} {
+        allow read: if signedIn() && uid == request.auth.uid && visible(id);
+        allow create: if visible(id) && uid == request.auth.uid && request.resource.data.keys().hasOnly(['createdAt']) && request.resource.data.createdAt == request.time;
+      }
+      match /likes/{uid} {
+        allow read: if visible(id);
+        allow create, update: if visible(id) && uid == request.auth.uid && request.resource.data.keys().hasOnly(['createdAt']) && request.resource.data.createdAt == request.time;
+        allow delete: if visible(id) && uid == request.auth.uid;
+      }
+      match /comments/{commentId} {
+        allow read: if visible(id);
+        allow create: if visible(id) && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.keys().hasOnly(['authorId', 'profileId', 'username', 'text', 'createdAt'])
+          && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 500
+          && request.resource.data.username is string && request.resource.data.username.size() <= 24
+          && get(/databases/$(database)/documents/profiles/$(request.resource.data.profileId)).data.ownerId == request.auth.uid
+          && request.resource.data.username == get(/databases/$(database)/documents/profiles/$(request.resource.data.profileId)).data.username
+          && request.resource.data.createdAt == request.time;
+        allow delete: if signedIn() && (resource.data.authorId == request.auth.uid || owner(get(/databases/$(database)/documents/memories/$(id)).data));
+      }
+    }
+    match /profiles/{id} {
+      allow read: if signedIn();
+      allow create: if owner(request.resource.data) && validProfile(request.resource.data);
+      allow update: if owner(resource.data) && owner(request.resource.data) && validProfile(request.resource.data);
+      allow delete: if owner(resource.data);
+      function validProfile(data) {
+        return data.keys().hasOnly(['ownerId', 'username', 'bio', 'socialLinks'])
+          && data.username is string && data.username.size() >= 3 && data.username.size() <= 24
+          && data.bio is string && data.bio.size() <= 160 && data.socialLinks is map
+          && data.socialLinks.keys().hasOnly(['Instagram', 'TikTok', 'X', 'YouTube']);
+      }
+    }
+    match /notificationDevices/{token} {
+      allow get: if signedIn() && (!exists(/databases/$(database)/documents/notificationDevices/$(token)) || owner(resource.data));
+      allow list, delete: if owner(resource.data);
+      allow create: if owner(request.resource.data) && validDevice(request.resource.data);
+      allow update: if owner(resource.data) && owner(request.resource.data) && validDevice(request.resource.data);
+      function validDevice(data) {
+        return data.keys().hasOnly(['ownerId', 'profileId', 'token', 'replies', 'nearby', 'latitude', 'longitude', 'updatedAt', 'locationUpdatedAt'])
+          && data.token == token && data.replies is bool && data.nearby is bool && data.updatedAt == request.time
+          && get(/databases/$(database)/documents/profiles/$(data.profileId)).data.ownerId == request.auth.uid
+          && (!data.nearby || (data.locationUpdatedAt is timestamp && data.locationUpdatedAt <= request.time && data.latitude is number && data.latitude >= -90 && data.latitude <= 90
+            && data.longitude is number && data.longitude >= -180 && data.longitude <= 180));
+      }
+    }
+    // Counters, event receipts and notification sending are server-only.
+  }
+}

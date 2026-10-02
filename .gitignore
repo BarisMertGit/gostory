@@ -1,0 +1,108 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code / Cursor
+.vscode/
+*.code-workspace
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+pubspec.lock
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio
+/android/app/debug
+/android/app/profile
+/android/app/release
+*.jks
+*.keystore
+key.properties
+
+# iOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Runner.xcworkspace/xcshareddata/
+**/ios/Runner.xcworkspace/xcuserdata/
+**/ios/Runner.xcodeproj/xcuserdata/
+**/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/flutter_export_environment.sh
+
+# Firebase
+**/ios/Runner/GoogleService-Info.plist
+**/android/app/google-services.json
+**/lib/firebase_options.dart
+firebase_app_id_file.json
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+storage-debug.log
+
+# Secrets & Keys
+*.p12
+*.p8
+*.mobileprovision
+*.provisionprofile
+service-account*.json
+*-service-account*.json
+.env
+.env.*
+!.env.example
+
+# Build outputs
+/build/
+*.apk
+*.aab
+*.ipa
+*.app
+
+# Coverage
+coverage/
+
+# Release credentials and generated coverage
+android/key.properties
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+AuthKey_*.p8
+coverage/
+firebase/functions/node_modules/
+firebase/tests/node_modules/
+firebase-debug.log
+firestore-debug.log
