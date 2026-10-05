@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/colors.dart';
+import '../../../../app/theme/design.dart';
+import '../../../../core/utils/memory_labels.dart';
 import '../../../../shared/models/memory.dart';
 import '../../../../shared/widgets/memory_photo.dart';
 
@@ -25,7 +27,7 @@ class DiscoveryMemoryCard extends StatelessWidget {
         child: Material(
           color: AppColors.surfaceVariant,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadii.card),
             side: BorderSide(
               color: selected ? AppColors.peach : AppColors.divider,
               width: 1,
@@ -40,11 +42,11 @@ class DiscoveryMemoryCard extends StatelessWidget {
                 children: [
                   if (memory.photoUrl.isNotEmpty) ...[
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppRadii.small),
                       child: MemoryPhoto(
                         path: memory.photoUrl,
-                        width: 60,
-                        height: 72,
+                        width: 64,
+                        height: 80,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -54,22 +56,23 @@ class DiscoveryMemoryCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         InkWell(
-                            onTap: onAuthorTap,
-                            child: ConstrainedBox(
-                                constraints:
-                                    const BoxConstraints(minHeight: 44),
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    '@${memory.creatorUsername}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: AppColors.peach,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),),),
+                          onTap: onAuthorTap,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(minHeight: 44),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '@${memory.creatorUsername}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.peach,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           memory.textNote,
@@ -84,15 +87,17 @@ class DiscoveryMemoryCard extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           memory.locationLabel,
-                          style: const TextStyle(color: AppColors.mapSecondary),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: AppColors.textSecondary),
                         ),
                         Text(
                           distance == null
-                              ? MaterialLocalizations.of(context)
-                                  .formatMediumDate(memory.createdAt.toLocal())
-                              : distance! < 1000
-                                  ? '${distance!.round()} m uzaklıkta'
-                                  : '${(distance! / 1000).toStringAsFixed(1)} km uzaklıkta',
+                              ? memoryDateLabel(memory.createdAt)
+                              : memoryDistanceLabel(distance!),
                           style: const TextStyle(
                             color: AppColors.mapSecondary,
                             fontSize: 12,

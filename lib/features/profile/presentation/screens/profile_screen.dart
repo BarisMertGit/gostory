@@ -8,6 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/navigation.dart';
 import '../../../../app/theme/colors.dart';
+import '../../../../app/theme/design.dart';
+import '../../../../app/theme/spacing.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../shared/models/memory.dart';
@@ -146,218 +148,161 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final sync = ref.watch(syncStatusProvider);
     return Scaffold(
       body: SafeArea(
-          bottom: false,
-          child: profile.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => EmptyState(
-              icon: Icons.person_outline,
-              title: 'Profil yüklenemedi',
-              message: 'Bağlantını kontrol edip yeniden deneyebilirsin.',
-              action: PrimaryAction(
-                  label: 'Profili yeniden yükle',
-                  onPressed: () => ref.invalidate(authStateProvider),),
+        bottom: false,
+        child: profile.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, __) => EmptyState(
+            icon: Icons.person_outline,
+            title: 'Profil yüklenemedi',
+            message: 'Bağlantını kontrol edip yeniden deneyebilirsin.',
+            action: PrimaryAction(
+              label: 'Profili yeniden yükle',
+              onPressed: () => ref.invalidate(authStateProvider),
             ),
-            data: (user) {
-              final memories = archive.valueOrNull
-                  ?.where((m) => m.creatorId == user.uid)
-                  .toList();
-              return CustomScrollView(
-                  key: const PageStorageKey('profile-scroll'),
-                  slivers: [
-                    SliverToBoxAdapter(
-                        child: PageHeading(
-                            title: 'Profil',
-                            trailing: IconButton(
-                              tooltip: 'Ayarlar',
-                              onPressed: () => _settings(user),
-                              icon: const Icon(Icons.settings_outlined),
-                            ),),),
-                    SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        sliver: SliverToBoxAdapter(
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                              Container(
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                    color: AppColors.surface,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border:
-                                        Border.all(color: AppColors.divider),),
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Semantics(
-                                                button: true,
-                                                label:
-                                                    'Profil fotoğrafını değiştir',
-                                                child: GestureDetector(
-                                                  onTap: () => _edit(user),
-                                                  child: _Avatar(
-                                                      path: user.photoPath,
-                                                      username: user.username,
-                                                      size: 68,),
-                                                ),),
-                                            const SizedBox(width: 16),
-                                            Expanded(
-                                                child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                  Text('@${user.username}',
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .titleMedium,),
-                                                  if (memories != null) ...[
-                                                    const SizedBox(height: 4),
-                                                    Text(_stats(memories),
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .bodySmall
-                                                            ?.copyWith(
-                                                                color: AppColors
-                                                                    .textSecondary,),),
-                                                  ],
-                                                ],),),
-                                          ],),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                          user.bio.isEmpty
-                                              ? 'Kendinden kısaca bahset'
-                                              : user.bio,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium
-                                              ?.copyWith(
-                                                  color:
-                                                      AppColors.textSecondary,),),
-                                      const SizedBox(height: 16),
-                                      OutlinedButton.icon(
-                                          onPressed: () => _edit(user),
-                                          icon: const Icon(Icons.edit_outlined,
-                                              size: 16,),
-                                          label: const Text('Profili düzenle'),),
-                                      if (user.socialLinks.isNotEmpty)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8),
-                                          child: Wrap(spacing: 4, children: [
-                                            for (final link
-                                                in user.socialLinks.entries)
-                                              IconButton(
-                                                  tooltip: link.key,
-                                                  onPressed: () =>
-                                                      _open(link.value),
-                                                  icon: SocialIcon(link.key),),
-                                          ],),
-                                        ),
-                                    ],),
+          ),
+          data: (user) {
+            final memories = archive.valueOrNull
+                ?.where((m) => m.creatorId == user.uid)
+                .toList();
+            return CustomScrollView(
+              key: const PageStorageKey('profile-scroll'),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: PageHeading(
+                    title: 'Profil',
+                    trailing: IconButton(
+                      tooltip: 'Ayarlar',
+                      onPressed: () => _settings(user),
+                      icon: const Icon(Icons.settings_outlined),
+                    ),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _ProfileSummary(
+                          user: user,
+                          stats: memories == null ? null : _stats(memories),
+                          onEdit: () => _edit(user),
+                          onOpenLink: _open,
+                        ),
+                        if (sync != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Semantics(
+                              liveRegion: true,
+                              child: Text(
+                                sync,
+                                style: Theme.of(context).textTheme.bodySmall,
                               ),
-                              if (sync != null)
-                                Padding(
-                                    padding: const EdgeInsets.only(top: 12),
-                                    child: Semantics(
-                                        liveRegion: true,
-                                        child: Text(sync,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall,),),),
-                              const SizedBox(height: 32),
-                              Row(children: [
-                                Expanded(
-                                    child: Text('Anılarım',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium,),),
-                                if (memories != null)
-                                  Text('${memories.length} anı',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                              color: AppColors.textSecondary,),),
-                              ],),
-                              const SizedBox(height: 16),
-                            ],),),),
-                    if (archive.isLoading && memories == null)
-                      const SliverToBoxAdapter(
-                          child: Padding(
-                              padding: EdgeInsets.all(32),
-                              child:
-                                  Center(child: CircularProgressIndicator()),),)
-                    else if (archive.hasError)
-                      SliverToBoxAdapter(
-                          child: EmptyState(
-                              icon: Icons.cloud_off_outlined,
-                              title: 'Anılar yüklenemedi',
-                              message: 'Anılarını yeniden yüklemeyi dene.',
-                              action: PrimaryAction(
-                                  label: 'Tekrar dene',
-                                  onPressed: () => ref
-                                      .invalidate(personalMemoriesProvider),),),)
-                    else if (memories == null || memories.isEmpty)
-                      SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          sliver: SliverToBoxAdapter(
-                              child: Card(
-                                  child: EmptyState(
-                            icon: Icons.add_photo_alternate_outlined,
-                            title: 'İlk anın burada başlayacak',
-                            message:
-                                'Bir fotoğraf çek, kısa bir not ekle ve konumuyla sakla.',
-                            action: PrimaryAction(
-                                label: 'İlk anını paylaş',
-                                icon: Icons.add,
-                                onPressed: () => ref
-                                    .read(selectedTabProvider.notifier)
-                                    .state = 1,),
-                          ),),),)
-                    else
-                      SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          sliver: SliverLayoutBuilder(
-                              builder: (context, constraints) {
-                            final scale =
-                                MediaQuery.textScalerOf(context).scale(14) / 14;
-                            final columns = scale > 1.3
-                                ? 1
-                                : (constraints.crossAxisExtent / 160)
-                                    .floor()
-                                    .clamp(1, 3);
-                            final width = (constraints.crossAxisExtent -
-                                    (columns - 1) * 12) /
+                            ),
+                          ),
+                        const SizedBox(height: AppSpacing.lg),
+                        SectionHeading(
+                          title: 'Anılarım',
+                          count: memories?.length,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                ),
+                if (archive.isLoading && memories == null)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  )
+                else if (archive.hasError)
+                  SliverToBoxAdapter(
+                    child: EmptyState(
+                      icon: Icons.cloud_off_outlined,
+                      title: 'Anılar yüklenemedi',
+                      message: 'Anılarını yeniden yüklemeyi dene.',
+                      action: PrimaryAction(
+                        label: 'Tekrar dene',
+                        onPressed: () =>
+                            ref.invalidate(personalMemoriesProvider),
+                      ),
+                    ),
+                  )
+                else if (memories == null || memories.isEmpty)
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverToBoxAdapter(
+                      child: SurfacePanel(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                        ),
+                        child: EmptyState(
+                          icon: Icons.add_photo_alternate_outlined,
+                          title: 'İlk anın burada başlayacak',
+                          message:
+                              'Bir fotoğraf çek, kısa bir not ekle ve konumuyla sakla.',
+                          action: PrimaryAction(
+                            label: 'İlk anını paylaş',
+                            icon: Icons.add,
+                            onPressed: () => ref
+                                .read(selectedTabProvider.notifier)
+                                .state = 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverLayoutBuilder(
+                      builder: (context, constraints) {
+                        final scale =
+                            MediaQuery.textScalerOf(context).scale(14) / 14;
+                        final columns = scale > 1.3
+                            ? 1
+                            : ((constraints.crossAxisExtent + AppSpacing.gap) /
+                                    160)
+                                .floor()
+                                .clamp(1, 3);
+                        final width =
+                            (constraints.crossAxisExtent - (columns - 1) * 12) /
                                 columns;
-                            return SliverGrid(
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: columns,
-                                      crossAxisSpacing: 12,
-                                      mainAxisSpacing: 12,
-                                      mainAxisExtent: width * .9 + 148 * scale,),
-                              delegate: SliverChildBuilderDelegate(
-                                  (context, index) => _ProfileMemoryCard(
-                                      memory: memories[index], canDelete: true,),
-                                  childCount:
-                                      memories.length.clamp(0, _visibleCount),),
-                            );
-                          },),),
-                    if (memories != null && memories.length > _visibleCount)
-                      SliverToBoxAdapter(
-                          child: TextButton(
-                              onPressed: () =>
-                                  setState(() => _visibleCount += 20),
-                              child: const Text('Daha fazla anı'),),),
-                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                  ],);
-            },
-          ),),
+                        return SliverGrid(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: columns,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            mainAxisExtent:
+                                MemoryTile.extentFor(context, width),
+                          ),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) => _ProfileMemoryCard(
+                              memory: memories[index],
+                              canDelete: true,
+                            ),
+                            childCount: memories.length.clamp(0, _visibleCount),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                if (memories != null && memories.length > _visibleCount)
+                  SliverToBoxAdapter(
+                    child: TextButton(
+                      onPressed: () => setState(() => _visibleCount += 20),
+                      child: const Text('Daha fazla anı'),
+                    ),
+                  ),
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -365,6 +310,112 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final cities =
         memories.map((m) => m.city.trim()).where((c) => c.isNotEmpty).toSet();
     return '${memories.length} anı${cities.isEmpty ? '' : ' · ${cities.length} şehir'}';
+  }
+}
+
+class _ProfileSummary extends StatelessWidget {
+  const _ProfileSummary({
+    required this.user,
+    required this.stats,
+    required this.onEdit,
+    required this.onOpenLink,
+  });
+  final LocalUser user;
+  final String? stats;
+  final VoidCallback onEdit;
+  final ValueChanged<String> onOpenLink;
+
+  @override
+  Widget build(BuildContext context) {
+    final identity = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '@${user.username}',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        if (stats != null) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            stats!,
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ],
+    );
+    final avatar = Tooltip(
+      message: 'Profil fotoğrafını değiştir',
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onEdit,
+        child: Semantics(
+          button: true,
+          label: 'Profil fotoğrafını değiştir',
+          child: _Avatar(
+            path: user.photoPath,
+            username: user.username,
+            size: AppSizes.avatar,
+          ),
+        ),
+      ),
+    );
+    return SurfacePanel(
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (MediaQuery.textScalerOf(context).scale(18) > 27)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                avatar,
+                const SizedBox(height: AppSpacing.md),
+                identity,
+              ],
+            )
+          else
+            Row(
+              children: [
+                avatar,
+                const SizedBox(width: AppSpacing.md),
+                Expanded(child: identity),
+              ],
+            ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            user.bio.isEmpty ? 'Kendinden kısaca bahset' : user.bio,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SecondaryAction(
+            label: 'Profili düzenle',
+            icon: Icons.edit_outlined,
+            onPressed: onEdit,
+          ),
+          if (user.socialLinks.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.sm),
+              child: Wrap(
+                spacing: AppSpacing.xs,
+                children: [
+                  for (final link in user.socialLinks.entries)
+                    IconButton(
+                      tooltip: link.key,
+                      onPressed: () => onOpenLink(link.value),
+                      icon: SocialIcon(link.key),
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 
@@ -430,7 +481,8 @@ class _ProfileMemoryCard extends ConsumerWidget {
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Görünürlük değiştirilemedi.')),);
+          const SnackBar(content: Text('Görünürlük değiştirilemedi.')),
+        );
       }
     }
   }
@@ -451,9 +503,9 @@ class _ProfileMemoryCard extends ConsumerWidget {
             const PopupMenuItem(value: 'open', child: Text('Anıyı aç')),
             if (canDelete)
               PopupMenuItem(
-                  value: 'visibility',
-                  child:
-                      Text(memory.isPublic ? 'Özel yap' : 'Herkese açık yap'),),
+                value: 'visibility',
+                child: Text(memory.isPublic ? 'Özel yap' : 'Herkese açık yap'),
+              ),
             if (canDelete)
               const PopupMenuItem(value: 'delete', child: Text('Anıyı sil')),
           ],
@@ -715,7 +767,7 @@ class _ProfileEditorState extends ConsumerState<_ProfileEditor> {
                     padding: const EdgeInsets.only(top: 12),
                     child: Text(
                       _error!,
-                      style: const TextStyle(color: Color(0xFFF3A29A)),
+                      style: const TextStyle(color: AppColors.error),
                     ),
                   ),
                 const SizedBox(height: 24),
@@ -723,11 +775,6 @@ class _ProfileEditorState extends ConsumerState<_ProfileEditor> {
                   width: double.infinity,
                   child: FilledButton(
                     onPressed: _busy ? null : _save,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFE5B68E),
-                      foregroundColor: const Color(0xFF29241F),
-                      padding: const EdgeInsets.all(16),
-                    ),
                     child: Text(
                       _busy ? 'Lütfen bekle…' : 'Değişiklikleri kaydet',
                     ),

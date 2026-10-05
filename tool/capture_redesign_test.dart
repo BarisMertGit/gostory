@@ -4,8 +4,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gostory/app/home_screen.dart';
 import 'package:gostory/app/theme/app_theme.dart';
@@ -20,6 +20,7 @@ class _ArchiveSnapshot extends MemoryStore {
   @override
   Future<List<Memory>> read() async => rows;
 }
+
 class _ProfileSnapshot extends AuthService {
   _ProfileSnapshot(this.user);
   final LocalUser user;
@@ -28,49 +29,88 @@ class _ProfileSnapshot extends AuthService {
 }
 
 void main() {
-  testWidgets('capture the three redesigned screens with the existing local archive', (tester) async {
-    final archivePath = Platform.environment['GOSTORY_ARCHIVE_DIR'] ?? '${Platform.environment['HOME']}/Library/Containers/com.gostory.gostory/Data/Library/Application Support/com.gostory.gostory';
+  testWidgets(
+      'capture the three redesigned screens with the existing local archive',
+      (tester) async {
+    final previousShadows = debugDisableShadows;
+    debugDisableShadows = false;
+    addTearDown(() => debugDisableShadows = previousShadows);
+    final archivePath = Platform.environment['GOSTORY_ARCHIVE_DIR'] ??
+        '${Platform.environment['HOME']}/Library/Containers/com.gostory.gostory/Data/Library/Application Support/com.gostory.gostory';
     late LocalUser user;
     late List<Memory> rows;
     await tester.runAsync(() async {
       final file = File('$archivePath/gostory_profile.json');
-      if (!await file.exists()) throw StateError('Set GOSTORY_ARCHIVE_DIR to an existing profile; this capture does not create sample users.');
+      if (!await file.exists()) {
+        throw StateError(
+          'Set GOSTORY_ARCHIVE_DIR to an existing profile; this capture does not create sample users.',
+        );
+      }
       user = await AuthService(profileFile: () async => file).signIn();
       final store = MemoryStore(directory: () async => Directory(archivePath));
       rows = await store.read();
       await store.dispose();
-      final bytes = await File('/System/Library/Fonts/Supplemental/Arial.ttf').readAsBytes();
+      final bytes = await File('/System/Library/Fonts/Supplemental/Arial.ttf')
+          .readAsBytes();
       for (final family in ['Ahem', 'Roboto', 'SF Pro Text', '.SF UI Text']) {
-        await (FontLoader(family)..addFont(Future.value(ByteData.sublistView(bytes)))).load();
+        await (FontLoader(family)
+              ..addFont(Future.value(ByteData.sublistView(bytes))))
+            .load();
       }
-      await (FontLoader('MaterialIcons')..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
+      await (FontLoader('MaterialIcons')
+            ..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf')))
+          .load();
     });
-    BuiltInMapCachingProvider.getOrCreateInstance(cacheDirectory: '/private/tmp/gostory-design-map-cache');
+    BuiltInMapCachingProvider.getOrCreateInstance(
+      cacheDirectory: '/private/tmp/gostory-design-map-cache',
+    );
     final oldHttp = HttpOverrides.current;
     HttpOverrides.global = null;
     addTearDown(() => HttpOverrides.global = oldHttp);
     tester.view.physicalSize = const Size(1170, 2532);
     tester.view.devicePixelRatio = 3;
     final boundaryKey = GlobalKey();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      authServiceProvider.overrideWithValue(_ProfileSnapshot(user)),
-      memoryStoreProvider.overrideWithValue(_ArchiveSnapshot(rows)),
-    ], child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
-      builder: (context, child) => RepaintBoundary(key: boundaryKey, child: MediaQuery(
-        data: MediaQuery.of(context).copyWith(padding: const EdgeInsets.only(top: 44, bottom: 24)), child: child!,
-      )),
-      home: const HomeScreen(),
-    )));
+    await tester.runAsync(() async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authServiceProvider.overrideWithValue(_ProfileSnapshot(user)),
+            memoryStoreProvider.overrideWithValue(_ArchiveSnapshot(rows)),
+          ],
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.dark,
+            builder: (context, child) => RepaintBoundary(
+              key: boundaryKey,
+              child: MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  padding: const EdgeInsets.only(top: 44, bottom: 24),
+                ),
+                child: child!,
+              ),
+            ),
+            home: const HomeScreen(),
+          ),
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      await tester.pump();
+      await Future<void>.delayed(const Duration(seconds: 4));
+      await tester.pump();
+    });
     await tester.pumpAndSettle();
-    await tester.runAsync(() => Future<void>.delayed(const Duration(seconds: 4)));
-    await tester.pumpAndSettle();
-    for (final screen in {'map': 'Harita', 'share': 'Paylaş', 'profile': 'Profil'}.entries) {
-      await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text(screen.value)));
+    for (final screen
+        in {'map': 'Harita', 'share': 'Paylaş', 'profile': 'Profil'}.entries) {
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text(screen.value),
+        ),
+      );
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
-        final boundary = boundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+        final boundary = boundaryKey.currentContext!.findRenderObject()!
+            as RenderRepaintBoundary;
         final image = await boundary.toImage(pixelRatio: 3);
         final bytes = (await image.toByteData(format: ui.ImageByteFormat.png))!;
         final file = File('docs/design/${screen.key}-390.png');
@@ -79,6 +119,7 @@ void main() {
         image.dispose();
       });
     }
+    debugDisableShadows = previousShadows;
     expect(tester.takeException(), isNull);
   });
 }

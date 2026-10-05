@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import '../../../../app/theme/colors.dart';
 import '../../../../app/theme/design.dart';
 import '../../../../shared/models/memory.dart';
+import '../../../../shared/widgets/map_tiles.dart';
 import 'memory_clusters.dart';
 
 /// Geographic world map shared by preview and device builds.
@@ -111,47 +112,62 @@ class DiscoveryMapState extends State<DiscoveryMap> {
         ),
         children: [
           TileLayer(
+            tileBuilder: mapTileBuilder,
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             userAgentPackageName: 'com.gostory.app',
             tileProvider: widget.tileProvider,
           ),
-          Builder(builder: (context) {
-            final camera = MapCamera.of(context);
-            final clusters = clusterMemories(
+          Builder(
+            builder: (context) {
+              final camera = MapCamera.of(context);
+              final clusters = clusterMemories(
                 widget.memories,
                 (memory) => camera.latLngToScreenOffset(
-                    LatLng(memory.latitude, memory.longitude),),);
-            return MarkerLayer(markers: [
-              if (widget.hasUserLocation)
-                Marker(
-                  point: LatLng(widget.latitude, widget.longitude),
-                  width: 28,
-                  height: 28,
-                  child: Semantics(
-                      label: 'Cihaz konumun',
-                      child: Container(
-                        decoration: BoxDecoration(
-                            color: AppColors.peach.withValues(alpha: .25),
-                            shape: BoxShape.circle,),
-                        padding: const EdgeInsets.all(7),
+                  LatLng(memory.latitude, memory.longitude),
+                ),
+              );
+              return MarkerLayer(
+                markers: [
+                  if (widget.hasUserLocation)
+                    Marker(
+                      point: LatLng(widget.latitude, widget.longitude),
+                      width: 28,
+                      height: 28,
+                      child: Semantics(
+                        label: 'Cihaz konumun',
                         child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.peach.withValues(alpha: .25),
+                            shape: BoxShape.circle,
+                          ),
+                          padding: const EdgeInsets.all(7),
+                          child: Container(
                             decoration: BoxDecoration(
-                                color: AppColors.onPeach,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                    color: AppColors.peach, width: 2,),),),
-                      ),),
-                ),
-              for (final cluster in clusters)
-                Marker(
-                  point: LatLng(cluster.memories.first.latitude,
-                      cluster.memories.first.longitude,),
-                  width: 48,
-                  height: 48,
-                  child: _pin(context, cluster),
-                ),
-            ],);
-          },),
+                              color: AppColors.onPeach,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.peach,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  for (final cluster in clusters)
+                    Marker(
+                      point: LatLng(
+                        cluster.memories.first.latitude,
+                        cluster.memories.first.longitude,
+                      ),
+                      width: 48,
+                      height: 48,
+                      child: _pin(context, cluster),
+                    ),
+                ],
+              );
+            },
+          ),
         ],
       );
 
@@ -163,57 +179,75 @@ class DiscoveryMapState extends State<DiscoveryMap> {
         ? '${cluster.memories.length} anı, kümeyi aç'
         : 'Anı: ${memory.textNote}';
     return Semantics(
-        button: true,
-        selected: selected,
-        label: label,
-        child: Tooltip(
-          message: label,
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: () {
-              if (!grouped) {
-                widget.onSelect(memory);
-              } else if (controller.camera.zoom >= 17 ||
-                  cluster.memories.every((m) =>
+      button: true,
+      selected: selected,
+      label: label,
+      child: Tooltip(
+        message: label,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: () {
+            if (!grouped) {
+              widget.onSelect(memory);
+            } else if (controller.camera.zoom >= 17 ||
+                cluster.memories.every(
+                  (m) =>
                       m.latitude == memory.latitude &&
-                      m.longitude == memory.longitude,)) {
-                widget.onCluster?.call(cluster.memories);
-              } else {
-                controller.move(LatLng(memory.latitude, memory.longitude),
-                    (controller.camera.zoom + 2).clamp(2.0, 19.0),);
-              }
-            },
-            child: Center(
-                child: AnimatedContainer(
+                      m.longitude == memory.longitude,
+                )) {
+              widget.onCluster?.call(cluster.memories);
+            } else {
+              controller.move(
+                LatLng(memory.latitude, memory.longitude),
+                (controller.camera.zoom + 2).clamp(2.0, 19.0),
+              );
+            }
+          },
+          child: Center(
+            child: AnimatedContainer(
               duration: AppMotion.duration(context),
-              width: selected ? 42 : 38,
-              height: selected ? 42 : 38,
+              width: selected ? AppSizes.selectedMarker : AppSizes.marker,
+              height: selected ? AppSizes.selectedMarker : AppSizes.marker,
               decoration: BoxDecoration(
                 color:
                     selected || grouped ? AppColors.peach : AppColors.surface,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadii.control),
                 border:
                     Border.all(color: AppColors.peach, width: selected ? 2 : 1),
                 boxShadow: const [
                   BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),),
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
                 ],
               ),
               child: Center(
-                  child: grouped
-                      ? Text('${cluster.memories.length}',
-                          style: const TextStyle(
+                child: grouped
+                    ? Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '${cluster.memories.length}',
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.onPeach,),)
-                      : Icon(Icons.photo_camera_outlined,
-                          size: 19,
-                          color:
-                              selected ? AppColors.onPeach : AppColors.peach,),),
-            ),),
+                              color: AppColors.onPeach,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Icon(
+                        Icons.photo_camera_outlined,
+                        size: 19,
+                        color: selected ? AppColors.onPeach : AppColors.peach,
+                      ),
+              ),
+            ),
           ),
-        ),);
+        ),
+      ),
+    );
   }
 }

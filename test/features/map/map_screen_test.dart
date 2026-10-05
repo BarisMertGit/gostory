@@ -75,7 +75,10 @@ void main() {
         expect(find.byKey(const ValueKey('map-memory-panel')), findsOneWidget);
         map.onSelect(map.memories.first);
         await tester.pumpAndSettle();
-        expect(find.byKey(const ValueKey('selected-memory-card')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('selected-memory-card')),
+          findsOneWidget,
+        );
         final author = find.text('@${map.memories.first.creatorUsername}');
         await tester.ensureVisible(author);
         await tester.tap(author);
@@ -103,6 +106,8 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Buraya ilk anıyı sen bırak'), findsOneWidget);
         await tester.ensureVisible(find.text('Anı bırak').last);
+        await tester.pumpAndSettle();
+        expect(find.text('Anı bırak').last.hitTestable(), findsOneWidget);
         await tester.tap(find.text('Anı bırak').last);
         expect(container.read(selectedTabProvider), 1);
         expect(

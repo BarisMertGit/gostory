@@ -9,10 +9,11 @@ abstract final class AppTheme {
     final base = ThemeData(useMaterial3: true, brightness: Brightness.dark);
     const text = TextTheme(
       headlineMedium: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.w600,
-          height: 1.2,
-          letterSpacing: -.5,),
+        fontSize: 28,
+        fontWeight: FontWeight.w600,
+        height: 1.2,
+        letterSpacing: -.5,
+      ),
       headlineSmall:
           TextStyle(fontSize: 26, fontWeight: FontWeight.w600, height: 1.2),
       titleLarge:
@@ -29,10 +30,12 @@ abstract final class AppTheme {
       labelSmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
     );
     final shape = RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadii.control),);
+      borderRadius: BorderRadius.circular(AppRadii.control),
+    );
     final border = OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadii.control),
-        borderSide: const BorderSide(color: AppColors.divider),);
+      borderRadius: BorderRadius.circular(AppRadii.control),
+      borderSide: const BorderSide(color: AppColors.divider),
+    );
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.background,
       colorScheme: const ColorScheme.dark(
@@ -49,64 +52,75 @@ abstract final class AppTheme {
         onError: AppColors.onPeach,
       ),
       textTheme: base.textTheme.merge(text).apply(
-          bodyColor: AppColors.textPrimary,
-          displayColor: AppColors.textPrimary,),
+            bodyColor: AppColors.textPrimary,
+            displayColor: AppColors.textPrimary,
+          ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
+        titleSpacing: 20,
         titleTextStyle: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,),
+          fontSize: 26,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-        backgroundColor: AppColors.peach,
-        foregroundColor: AppColors.onPeach,
-        disabledBackgroundColor: AppColors.surfaceVariant,
-        disabledForegroundColor: AppColors.textSecondary,
-        minimumSize: const Size(44, 48),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        shape: shape,
-      ),),
+        style: FilledButton.styleFrom(
+          animationDuration: AppMotion.standard,
+          backgroundColor: AppColors.peach,
+          foregroundColor: AppColors.onPeach,
+          disabledBackgroundColor: AppColors.surfaceVariant,
+          disabledForegroundColor: AppColors.textSecondary,
+          minimumSize: const Size(AppSizes.touchTarget, 48),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          shape: shape,
+        ),
+      ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-          style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.textPrimary,
-        side: const BorderSide(color: AppColors.divider),
-        minimumSize: const Size(44, 44),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: shape,
-      ),),
+        style: OutlinedButton.styleFrom(
+          animationDuration: AppMotion.standard,
+          foregroundColor: AppColors.textPrimary,
+          side: const BorderSide(color: AppColors.divider),
+          minimumSize: const Size(AppSizes.touchTarget, AppSizes.touchTarget),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: shape,
+        ),
+      ),
       textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-        foregroundColor: AppColors.peach,
-        minimumSize: const Size(44, 44),
-        shape: shape,
-      ),),
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.peach,
+          minimumSize: const Size(AppSizes.touchTarget, AppSizes.touchTarget),
+          shape: shape,
+        ),
+      ),
       iconButtonTheme: IconButtonThemeData(
-          style: IconButton.styleFrom(
-        foregroundColor: AppColors.textSecondary,
-        minimumSize: const Size(44, 44),
-        shape: shape,
-      ),),
+        style: IconButton.styleFrom(
+          foregroundColor: AppColors.textSecondary,
+          minimumSize: const Size(AppSizes.touchTarget, AppSizes.touchTarget),
+          shape: shape,
+        ),
+      ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.card),
-            side: const BorderSide(color: AppColors.divider),),
+          borderRadius: BorderRadius.circular(AppRadii.card),
+          side: const BorderSide(color: AppColors.divider),
+        ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.vertical(top: Radius.circular(AppRadii.sheet)),),
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(AppRadii.sheet)),
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -117,30 +131,39 @@ abstract final class AppTheme {
         border: border,
         enabledBorder: border,
         focusedBorder: border.copyWith(
-            borderSide: const BorderSide(color: AppColors.peach),),
+          borderSide: const BorderSide(color: AppColors.peach),
+        ),
         errorBorder: border.copyWith(
-            borderSide: const BorderSide(color: AppColors.error),),
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
       ),
       textSelectionTheme: const TextSelectionThemeData(
-          cursorColor: AppColors.peach,
-          selectionColor: AppColors.accentMuted,
-          selectionHandleColor: AppColors.peach,),
+        cursorColor: AppColors.peach,
+        selectionColor: AppColors.accentMuted,
+        selectionHandleColor: AppColors.peach,
+      ),
       navigationBarTheme: NavigationBarThemeData(
-        height: 64,
+        height: AppSizes.navigation,
         backgroundColor: AppColors.surface,
         indicatorColor: AppColors.accentGlow,
         surfaceTintColor: Colors.transparent,
-        labelTextStyle: WidgetStateProperty.resolveWith((states) => TextStyle(
-            fontSize: 11,
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => TextStyle(
+            fontSize: 12,
             fontWeight: FontWeight.w500,
             color: states.contains(WidgetState.selected)
                 ? AppColors.peach
-                : AppColors.textSecondary,),),
-        iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+                : AppColors.textSecondary,
+          ),
+        ),
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(
             size: 23,
             color: states.contains(WidgetState.selected)
                 ? AppColors.peach
-                : AppColors.textSecondary,),),
+                : AppColors.textSecondary,
+          ),
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.surfaceVariant,
@@ -149,7 +172,10 @@ abstract final class AppTheme {
         shape: shape,
       ),
       dividerTheme: const DividerThemeData(
-          color: AppColors.divider, thickness: 1, space: 1,),
+        color: AppColors.divider,
+        thickness: 1,
+        space: 1,
+      ),
     );
   }
 }

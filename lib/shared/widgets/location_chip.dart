@@ -7,11 +7,13 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../app/theme/colors.dart';
 import '../providers/location_provider.dart';
 import 'location_access.dart';
+import 'map_tiles.dart';
 
 final draftLocationProvider = StateProvider<LatLng?>((ref) => null);
 
 class LocationChip extends ConsumerWidget {
-  const LocationChip({super.key});
+  const LocationChip({super.key, this.enabled = true});
+  final bool enabled;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final point = ref.watch(draftLocationProvider);
@@ -42,15 +44,19 @@ class LocationChip extends ConsumerWidget {
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 12),
         ),
-        onPressed: () async {
-          final result = await Navigator.push<LatLng>(
-            context,
-            MaterialPageRoute(builder: (_) => LocationPicker(initial: point)),
-          );
-          if (context.mounted && result != null) {
-            ref.read(draftLocationProvider.notifier).state = result;
-          }
-        },
+        onPressed: !enabled
+            ? null
+            : () async {
+                final result = await Navigator.push<LatLng>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => LocationPicker(initial: point),
+                  ),
+                );
+                if (context.mounted && result != null) {
+                  ref.read(draftLocationProvider.notifier).state = result;
+                }
+              },
       ),
     );
   }
@@ -124,6 +130,7 @@ class _LocationPickerState extends ConsumerState<LocationPicker> {
               ),
               children: [
                 TileLayer(
+                  tileBuilder: mapTileBuilder,
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'com.gostory.app',
                 ),

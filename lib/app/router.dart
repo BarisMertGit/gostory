@@ -7,6 +7,7 @@ import '../features/map/presentation/screens/map_screen.dart';
 import '../features/preview/presentation/screens/preview_screen.dart';
 import '../features/splash/presentation/screens/splash_screen.dart';
 import 'home_screen.dart';
+import 'theme/design.dart';
 
 /// App route names.
 abstract final class AppRoutes {
@@ -58,19 +59,20 @@ Route<dynamic> _buildSplashRoute(RouteSettings settings) {
   );
 }
 
-/// Builds the preview route with a slow, cinematic slide-up transition.
+/// A short transition, skipped when the system requests reduced motion.
 Route<dynamic> _buildPreviewRoute(
   String photoPath,
   RouteSettings settings,
 ) {
   return PageRouteBuilder(
     settings: settings,
-    transitionDuration: const Duration(milliseconds: 500),
-    reverseTransitionDuration: const Duration(milliseconds: 400),
+    transitionDuration: AppMotion.standard,
+    reverseTransitionDuration: AppMotion.standard,
     pageBuilder: (context, animation, secondaryAnimation) {
       return PreviewScreen(photoPath: photoPath);
     },
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      if (MediaQuery.disableAnimationsOf(context)) return child;
       final fadeAnimation = CurvedAnimation(
         parent: animation,
         curve: Curves.easeOut,
@@ -88,12 +90,13 @@ Route<dynamic> _buildPreviewRoute(
 Route<dynamic> _buildMapRoute(RouteSettings settings) {
   return PageRouteBuilder(
     settings: settings,
-    transitionDuration: const Duration(milliseconds: 400),
-    reverseTransitionDuration: const Duration(milliseconds: 300),
+    transitionDuration: AppMotion.standard,
+    reverseTransitionDuration: AppMotion.standard,
     pageBuilder: (context, animation, secondaryAnimation) {
       return const MapScreen();
     },
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      if (MediaQuery.disableAnimationsOf(context)) return child;
       final slideAnimation = Tween<Offset>(
         begin: const Offset(1.0, 0.0),
         end: Offset.zero,

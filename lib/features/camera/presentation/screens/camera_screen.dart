@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/navigation.dart';
 import '../../../../app/router.dart';
 import '../../../../app/theme/colors.dart';
+import '../../../../app/theme/design.dart';
+import '../../../../app/theme/spacing.dart';
 import '../../../../core/services/permission_service.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/widgets/permission_explanation.dart';
@@ -12,6 +14,7 @@ import '../../../../shared/widgets/app_components.dart';
 import '../../../../shared/widgets/location_chip.dart';
 import '../../domain/camera_state.dart';
 import '../providers/camera_provider.dart';
+import '../widgets/shutter_button.dart';
 
 class CameraScreen extends ConsumerStatefulWidget {
   const CameraScreen({super.key, this.embedded = false, this.active = true});
@@ -225,129 +228,185 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(cameraProvider);
-    final cameras = _cameras;
     ref.listen(cameraProvider, (_, next) {
       if (widget.active && next is CameraCaptured) _preview(next.photoPath);
     });
     final controller = ref.read(cameraProvider.notifier).controller;
     final ready = state is CameraReady && controller != null;
     final loading = state is CameraLoading || _initializing;
-    final canSwitch =
-        cameras.any((c) => c.lensDirection == cam.CameraLensDirection.front) &&
-            cameras.any((c) => c.lensDirection == cam.CameraLensDirection.back);
+    final canSwitch = _cameras
+            .any((c) => c.lensDirection == cam.CameraLensDirection.front) &&
+        _cameras.any((c) => c.lensDirection == cam.CameraLensDirection.back);
     return Scaffold(
       body: SafeArea(
         bottom: !widget.embedded,
-        child: Column(children: [
-          const PageHeading(
+        child: Column(
+          children: [
+            PageHeading(
               title: 'Bir anı paylaş',
-              subtitle: 'Bir fotoğraf, bir yer, sana ait bir hikâye.',),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 16),
-            child:
-                Align(alignment: Alignment.centerLeft, child: LocationChip()),
-          ),
-          Expanded(
-              child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-            child: ready
-                ? Column(children: [
-                    Expanded(
-                        child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: ColoredBox(
-                          color: AppColors.surface,
-                          child: Center(child: cam.CameraPreview(controller)),),
-                    ),),
-                    const SizedBox(height: 16),
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Semantics(
-                          label: 'Fotoğraf çek',
-                          button: true,
-                          child: IconButton.filled(
-                            tooltip: 'Fotoğraf çek',
-                            style: IconButton.styleFrom(
-                                backgroundColor: AppColors.peach,
-                                foregroundColor: AppColors.onPeach,
-                                minimumSize: const Size(76, 76),
-                                shape: const CircleBorder(),),
-                            onPressed: () => ref
-                                .read(cameraProvider.notifier)
-                                .capturePhoto(),
-                            icon:
-                                const Icon(Icons.camera_alt_outlined, size: 32),
-                          ),),
-                      if (canSwitch) ...[
-                        const SizedBox(width: 24),
-                        IconButton.filledTonal(
-                          tooltip: 'Kamerayı çevir',
-                          onPressed: () => ref
-                              .read(cameraProvider.notifier)
-                              .switchCamera(cameras),
-                          icon: const Icon(Icons.cameraswitch_outlined),
-                        ),
-                      ],
-                    ],),
-                  ],)
-                : LayoutBuilder(
-                    builder: (context, constraints) => SingleChildScrollView(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                                minHeight: constraints.maxHeight,),
-                            child: Center(
-                                child: SizedBox(
-                                    width: double.infinity,
-                                    child: Card(
-                                      child: loading
-                                          ? const Padding(
-                                              padding: EdgeInsets.all(48),
-                                              child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    CircularProgressIndicator(),
-                                                    SizedBox(height: 20),
-                                                    Text('Kamera açılıyor…'),
-                                                  ],),)
-                                          : EmptyState(
-                                              icon: state
-                                                      is CameraPermissionDenied
-                                                  ? Icons
-                                                      .no_photography_outlined
-                                                  : Icons.camera_alt_outlined,
-                                              title: state is CameraIdle
-                                                  ? 'Bir fotoğrafla başla'
-                                                  : state is CameraPermissionDenied
-                                                      ? 'Kamera izni gerekli'
-                                                      : 'Kamera kullanılamıyor',
-                                              message: state is CameraError
-                                                  ? state.message
-                                                  : state is CameraPermissionDenied
-                                                      ? 'Bu anı yakalamak için kameraya erişim ver.'
-                                                      : 'Hatırlamak istediğin anı yakala.\nNotunu ve konumunu bir sonraki adımda ekle.',
-                                              action: PrimaryAction(
-                                                label: state
-                                                            is CameraPermissionDenied &&
-                                                        state.permanentlyDenied
-                                                    ? 'Ayarları aç'
-                                                    : state is CameraError
-                                                        ? 'Tekrar dene'
-                                                        : 'Kamerayı aç',
-                                                icon: state is CameraPermissionDenied &&
-                                                        state.permanentlyDenied
-                                                    ? Icons.settings_outlined
-                                                    : Icons.camera_alt_outlined,
-                                                onPressed: _starting
-                                                    ? null
-                                                    : () => _start(),
-                                              ),
-                                            ),
-                                    ),),),
+              trailing: widget.embedded ? null : const BackButton(),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                0,
+                AppSpacing.screenPadding,
+                AppSpacing.md,
+              ),
+              child:
+                  Align(alignment: Alignment.centerLeft, child: LocationChip()),
+            ),
+            Expanded(
+              child: ready
+                  ? Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.screenPadding,
+                        0,
+                        AppSpacing.screenPadding,
+                        AppSpacing.md,
+                      ),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(AppRadii.card),
+                              child: ColoredBox(
+                                color: AppColors.surface,
+                                child: Center(
+                                  child: cam.CameraPreview(controller),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),),
-          ),),
-        ],),
+                          const SizedBox(height: AppSpacing.lg),
+                          ValueListenableBuilder<cam.CameraValue>(
+                            valueListenable: controller,
+                            builder: (context, value, _) => Row(
+                              children: [
+                                const Expanded(child: SizedBox()),
+                                ShutterButton(
+                                  enabled: !value.isTakingPicture,
+                                  onPressed: () => ref
+                                      .read(cameraProvider.notifier)
+                                      .capturePhoto(),
+                                ),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: canSwitch
+                                        ? IconButton.filledTonal(
+                                            tooltip: 'Kamerayı çevir',
+                                            onPressed: value.isTakingPicture
+                                                ? null
+                                                : () => ref
+                                                    .read(
+                                                      cameraProvider.notifier,
+                                                    )
+                                                    .switchCamera(_cameras),
+                                            icon: const Icon(
+                                              Icons.cameraswitch_outlined,
+                                            ),
+                                          )
+                                        : const SizedBox.shrink(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.screenPadding,
+                        AppSpacing.sm,
+                        AppSpacing.screenPadding,
+                        AppSpacing.lg,
+                      ),
+                      child: SurfacePanel(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: loading
+                            ? Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.xl,
+                                ),
+                                child: Semantics(
+                                  liveRegion: true,
+                                  child: const Column(
+                                    children: [
+                                      CircularProgressIndicator(),
+                                      SizedBox(height: AppSpacing.lg),
+                                      Text('Kamera açılıyor…'),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : _starter(state),
+                      ),
+                    ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _starter(CameraState state) {
+    final denied = state is CameraPermissionDenied;
+    final settings = denied && state.permanentlyDenied;
+    final idle = state is CameraIdle || state is CameraCaptured;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(AppRadii.control),
+            border: Border.all(color: AppColors.divider),
+          ),
+          child: Icon(
+            denied ? Icons.no_photography_outlined : Icons.camera_alt_outlined,
+            size: 40,
+            color: AppColors.peach,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Text(
+          idle
+              ? 'Bir fotoğrafla başla'
+              : denied
+                  ? 'Kamera izni gerekli'
+                  : 'Kamera kullanılamıyor',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          state is CameraError
+              ? state.message
+              : denied
+                  ? settings
+                      ? 'Kamera erişimini cihaz ayarlarından açabilirsin.'
+                      : 'Bu anı yakalamak için kameraya erişim ver.'
+                  : 'Hatırlamak istediğin anı yakala. Kısa bir not ekle, konumuyla sakla.',
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        PrimaryAction(
+          label: settings
+              ? 'Ayarları aç'
+              : state is CameraError
+                  ? 'Tekrar dene'
+                  : denied
+                      ? 'İzin ver'
+                      : 'Kamerayı aç',
+          onPressed: _starting ? null : () => _start(),
+        ),
+      ],
     );
   }
 }

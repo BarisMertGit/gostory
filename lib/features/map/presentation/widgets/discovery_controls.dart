@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/colors.dart';
+import '../../../../app/theme/design.dart';
+import '../../../../app/theme/spacing.dart';
+import '../../../../shared/widgets/app_components.dart';
 
 class LeaveMemoryButton extends StatelessWidget {
   const LeaveMemoryButton({super.key, required this.onPressed});
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => FilledButton.icon(
+  Widget build(BuildContext context) => PrimaryAction(
         onPressed: onPressed,
-        icon: const Icon(Icons.add),
-        label: const Text('Anı bırak'),
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.peach,
-          foregroundColor: AppColors.onPeach,
-          minimumSize: const Size(44, 44),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-        ),
+        icon: Icons.add,
+        label: 'Anı bırak',
       );
 }
 
@@ -37,39 +34,50 @@ class DiscoveryControls extends StatelessWidget {
         onPressed: action,
         icon: Icon(icon, size: 21),
         style: IconButton.styleFrom(
-          minimumSize: const Size(44, 44),
+          minimumSize: const Size.square(AppSizes.touchTarget),
           foregroundColor: AppColors.textPrimary,
         ),
       );
 
-  @override
-  Widget build(BuildContext context) => compact ? Material(
-    color: AppColors.surface,
-    borderRadius: BorderRadius.circular(14),
-    child: Row(mainAxisSize: MainAxisSize.min, children: [
-      _button(Icons.add, 'Yakınlaştır', onZoomIn),
-      _button(Icons.remove, 'Uzaklaştır', onZoomOut),
-      _button(Icons.my_location, 'Konumuma dön', onLocate),
-    ]),
-  ) : Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Material(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
-            child: Column(
-              children: [
-                _button(Icons.add, 'Yakınlaştır', onZoomIn),
-                _button(Icons.remove, 'Uzaklaştır', onZoomOut),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Material(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
-            child: _button(Icons.my_location, 'Konumuma dön', onLocate),
-          ),
-        ],
+  Widget _surface(Widget child) => Material(
+        color: AppColors.surface,
+        elevation: 2,
+        shadowColor: Colors.black26,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.control),
+          side: const BorderSide(color: AppColors.divider),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: child,
       );
+
+  @override
+  Widget build(BuildContext context) {
+    final zoomIn = _button(Icons.add, 'Yakınlaştır', onZoomIn);
+    final zoomOut = _button(Icons.remove, 'Uzaklaştır', onZoomOut);
+    final locate = _button(Icons.my_location, 'Konumuma dön', onLocate);
+    return compact
+        ? _surface(
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [zoomIn, zoomOut, locate],
+            ),
+          )
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _surface(
+                Column(
+                  children: [
+                    zoomIn,
+                    const SizedBox(width: 24, child: Divider(height: 1)),
+                    zoomOut,
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _surface(locate),
+            ],
+          );
+  }
 }

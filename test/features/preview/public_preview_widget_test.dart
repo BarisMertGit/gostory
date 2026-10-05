@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gostory/core/services/auth_service.dart';
-import 'package:gostory/features/preview/presentation/screens/preview_screen.dart';
 import 'package:gostory/features/preview/presentation/providers/preview_provider.dart';
+import 'package:gostory/features/preview/presentation/screens/preview_screen.dart';
 import 'package:gostory/shared/providers/auth_provider.dart';
 import 'package:gostory/shared/providers/memories_provider.dart';
 import 'package:gostory/shared/widgets/location_chip.dart';
@@ -66,15 +66,22 @@ void main() {
     await tester.ensureVisible(find.byType(SwitchListTile));
     await tester.tap(find.byType(SwitchListTile));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Anıyı paylaş'));
-    final container = ProviderScope.containerOf(tester.element(find.byType(PreviewScreen)));
+    await tester
+        .ensureVisible(find.widgetWithText(FilledButton, 'Anıyı paylaş'));
+    final container =
+        ProviderScope.containerOf(tester.element(find.byType(PreviewScreen)));
     await tester.runAsync(() async {
       await tester.tap(find.widgetWithText(FilledButton, 'Anıyı paylaş'));
       await Future<void>.delayed(const Duration(milliseconds: 200));
     });
-    for (var attempt = 0; attempt < 50 && container.read(previewProvider(photo.path)).isSubmitting; attempt++) {
+    for (var attempt = 0;
+        attempt < 50 &&
+            container.read(previewProvider(photo.path)).isSubmitting;
+        attempt++) {
       await tester.pump();
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
     }
     await tester.pumpAndSettle();
     final rows = await tester.runAsync(store.read);
