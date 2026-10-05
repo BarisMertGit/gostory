@@ -1,0 +1,45 @@
+name: Build review artifacts
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  APP_STORE_URL: ${{ vars.APP_STORE_URL }}
+  GOOGLE_PLAY_URL: ${{ vars.GOOGLE_PLAY_URL }}
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.48.0-0.5.pre'
+          channel: beta
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter test
+      - run: flutter build apk --debug "--dart-define=APP_STORE_URL=$APP_STORE_URL" "--dart-define=GOOGLE_PLAY_URL=$GOOGLE_PLAY_URL"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-review-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.48.0-0.5.pre'
+          channel: beta
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter test
+      - run: flutter build ios --release --no-codesign "--dart-define=APP_STORE_URL=$APP_STORE_URL" "--dart-define=GOOGLE_PLAY_URL=$GOOGLE_PLAY_URL"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-unsigned-review-app
+          path: build/ios/iphoneos/Runner.app
