@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/theme/design.dart';
 import '../../../core/services/cloud_service.dart';
 import '../../../core/services/interactions_service.dart';
 import '../../../shared/models/memory.dart';
@@ -10,17 +11,25 @@ import '../../../shared/providers/memories_provider.dart';
 import '../../../shared/widgets/memory_photo.dart';
 import '../../profile/presentation/screens/public_profile_screen.dart';
 
-void openMemoryDetail(BuildContext context, Memory memory) {
+void openMemoryDetail(BuildContext context, Memory memory, {Object? heroTag}) {
   Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => MemoryDetailScreen(memory: memory),
+    PageRouteBuilder<void>(
+      transitionDuration: AppMotion.duration(context),
+      reverseTransitionDuration: AppMotion.duration(context),
+      pageBuilder: (_, __, ___) =>
+          MemoryDetailScreen(memory: memory, heroTag: heroTag),
+      transitionsBuilder: (_, animation, __, child) => FadeTransition(
+        opacity: animation,
+        child: child,
+      ),
     ),
   );
 }
 
 class MemoryDetailScreen extends ConsumerStatefulWidget {
-  const MemoryDetailScreen({super.key, required this.memory});
+  const MemoryDetailScreen({super.key, required this.memory, this.heroTag});
   final Memory memory;
+  final Object? heroTag;
 
   @override
   ConsumerState<MemoryDetailScreen> createState() => _MemoryDetailScreenState();
@@ -112,7 +121,10 @@ class _MemoryDetailScreenState extends ConsumerState<MemoryDetailScreen> {
         children: [
           AspectRatio(
             aspectRatio: 4 / 3,
-            child: MemoryPhoto(path: memory.photoUrl),
+            child: MemoryPhotoTransition(
+              tag: widget.heroTag,
+              child: MemoryPhoto(path: memory.photoUrl),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(24),

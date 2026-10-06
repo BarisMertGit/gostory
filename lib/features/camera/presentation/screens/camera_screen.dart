@@ -317,14 +317,14 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                         ],
                       ),
                     )
-                  : SingleChildScrollView(
+                  : AdaptiveStateBody(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.screenPadding,
                         AppSpacing.sm,
                         AppSpacing.screenPadding,
                         AppSpacing.lg,
                       ),
-                      child: SurfacePanel(
+                      child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.lg),
                         child: loading
                             ? Padding(
@@ -359,16 +359,11 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceVariant,
-            borderRadius: BorderRadius.circular(AppRadii.control),
-            border: Border.all(color: AppColors.divider),
-          ),
+        Align(
+          alignment: Alignment.centerLeft,
           child: Icon(
             denied ? Icons.no_photography_outlined : Icons.camera_alt_outlined,
-            size: 40,
+            size: 36,
             color: AppColors.peach,
           ),
         ),
@@ -379,7 +374,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
               : denied
                   ? 'Kamera izni gerekli'
                   : 'Kamera kullanılamıyor',
-          style: Theme.of(context).textTheme.titleLarge,
+          style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(

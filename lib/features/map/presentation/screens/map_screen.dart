@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/navigation.dart';
 import '../../../../app/router.dart';
@@ -14,8 +13,10 @@ import '../../../../app/theme/spacing.dart';
 import '../../../../shared/models/memory.dart';
 import '../../../../shared/providers/location_provider.dart';
 import '../../../../shared/widgets/app_components.dart';
+import '../../../../shared/widgets/content_placeholder.dart';
 import '../../../../shared/widgets/location_access.dart';
 import '../../../../shared/widgets/location_permission_band.dart';
+import '../../../../shared/widgets/map_attribution.dart';
 import '../../../memory/presentation/memory_detail_screen.dart';
 import '../../../profile/presentation/screens/public_profile_screen.dart';
 import '../../domain/map_state.dart';
@@ -34,6 +35,7 @@ class MapScreen extends ConsumerStatefulWidget {
 class _MapScreenState extends ConsumerState<MapScreen> {
   final _mapKey = GlobalKey<DiscoveryMapState>();
   final _sheet = DraggableScrollableController();
+  ScrollController? _panelScroll;
   int _filter = 1;
   String? _selectedId;
   LatLngBounds? _bounds;
@@ -73,6 +75,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   void _select(Memory memory) {
     setState(() => _selectedId = memory.id);
     _expand(true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && (_panelScroll?.hasClients ?? false)) {
+        _panelScroll!.jumpTo(0);
+      }
+    });
     _mapKey.currentState?.focusMemory(
       memory,
       bottomInset: _mapHeight * math.max(_minimum, .58),
@@ -126,14 +133,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       body: SafeArea(
         bottom: !widget.embedded,
         child: switch (state) {
-          MapLoading() => const Center(child: CircularProgressIndicator()),
-          MapError(:final message) => EmptyState(
-              icon: Icons.map_outlined,
-              title: 'Anılar yüklenemedi',
-              message: message,
-              action: PrimaryAction(
-                label: 'Tekrar dene',
-                onPressed: () => ref.read(mapProvider.notifier).refresh(),
+          MapLoading() => const MapPlaceholder(),
+          MapError(:final message) => AdaptiveStateBody(
+              child: EmptyState(
+                icon: Icons.map_outlined,
+                title: 'Anılar yüklenemedi',
+                message: message,
+                action: PrimaryAction(
+                  label: 'Tekrar dene',
+                  onPressed: () => ref.read(mapProvider.notifier).refresh(),
+                ),
               ),
             ),
           MapReady() => _discovery(state),
@@ -234,18 +243,38 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       top: AppSpacing.gap,
                       left: AppSpacing.gap,
                       right: AppSpacing.gap,
+                      bottom: _mapHeight * visibleExtent + AppSpacing.gap,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const LocationPermissionBand(inset: false),
-                          if (_mapHeight * (1 - visibleExtent) > 120)
-                            DiscoveryControls(
-                              compact: _mapHeight * (1 - visibleExtent) < 240,
-                              onZoomIn: () => _mapKey.currentState?.zoomBy(2),
-                              onZoomOut: () => _mapKey.currentState?.zoomBy(.5),
-                              onLocate: () =>
-                                  requestDeviceLocation(context, ref),
+                          if (!expanded &&
+                              _mapHeight * (1 - visibleExtent) >
+                                  (MediaQuery.textScalerOf(context).scale(12) >
+                                          18
+                                      ? 340
+                                      : 120))
+                            const LocationPermissionBand(inset: false),
+                          Expanded(
+                            child: LayoutBuilder(
+                              builder: (context, space) {
+                                if (space.maxHeight < AppSizes.touchTarget) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Align(
+                                  alignment: Alignment.topRight,
+                                  child: DiscoveryControls(
+                                    compact: space.maxHeight < 200,
+                                    onZoomIn: () =>
+                                        _mapKey.currentState?.zoomBy(2),
+                                    onZoomOut: () =>
+                                        _mapKey.currentState?.zoomBy(.5),
+                                    onLocate: () =>
+                                        requestDeviceLocation(context, ref),
+                                  ),
+                                );
+                              },
                             ),
+                          ),
                         ],
                       ),
                     ),
@@ -278,85 +307,95 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                             MediaQuery.disableAnimationsOf(context)
                                 ? null
                                 : AppMotion.duration(context),
-                        builder: (context, scrollController) => Material(
-                          color: AppColors.surface,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(AppRadii.sheet),
-                            ),
-                            side: BorderSide(color: AppColors.divider),
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: CustomScrollView(
-                            key: const ValueKey('map-memory-panel'),
-                            controller: scrollController,
-                            slivers: [
-                              SliverPersistentHeader(
-                                pinned: true,
-                                delegate: _PanelHeader(
-                                  height: headerHeight,
-                                  count: nearby.length,
-                                  expanded: expanded,
-                                  onTap: () => _expand(!expanded),
-                                ),
+                        builder: (context, scrollController) {
+                          _panelScroll = scrollController;
+                          return Material(
+                            color: AppColors.surface,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(AppRadii.sheet),
                               ),
-                              if (nearby.isEmpty)
-                                SliverToBoxAdapter(
-                                  child: EmptyState(
-                                    icon: Icons.add_location_alt_outlined,
-                                    title: 'Buraya ilk anıyı sen bırak',
-                                    message:
-                                        'Haritayı gez veya bu yere kendi hikâyeni ekle.',
-                                    action:
-                                        LeaveMemoryButton(onPressed: _share),
+                              side: BorderSide(color: AppColors.divider),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: CustomScrollView(
+                              key: const ValueKey('map-memory-panel'),
+                              controller: scrollController,
+                              slivers: [
+                                SliverPersistentHeader(
+                                  pinned: true,
+                                  delegate: _PanelHeader(
+                                    height: headerHeight,
+                                    count: nearby.length,
+                                    expanded: expanded,
+                                    onTap: () => _expand(!expanded),
                                   ),
-                                )
-                              else
-                                SliverPadding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                                  sliver: SliverList.builder(
-                                    itemCount: nearby.length,
-                                    itemBuilder: (context, index) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 8),
-                                      child: DiscoveryMemoryCard(
-                                        key: ValueKey(
-                                          nearby[index].id == _selectedId
-                                              ? 'selected-memory-card'
-                                              : nearby[index].id,
-                                        ),
-                                        memory: nearby[index],
-                                        distance: state.hasUserLocation
-                                            ? _distance(nearby[index], state)
-                                            : null,
-                                        selected:
-                                            nearby[index].id == _selectedId,
-                                        onTap: () => openMemoryDetail(
-                                          context,
-                                          nearby[index],
-                                        ),
-                                        onAuthorTap: () => openPublicProfile(
-                                          context,
-                                          nearby[index],
+                                ),
+                                if (expanded)
+                                  const SliverToBoxAdapter(
+                                    child: LocationPermissionBand(),
+                                  ),
+                                if (nearby.isEmpty)
+                                  SliverToBoxAdapter(
+                                    child: EmptyState(
+                                      icon: Icons.add_location_alt_outlined,
+                                      title: 'Buraya ilk anıyı sen bırak',
+                                      message:
+                                          'Haritayı gez veya bu yere kendi hikâyeni ekle.',
+                                      action:
+                                          LeaveMemoryButton(onPressed: _share),
+                                    ),
+                                  )
+                                else
+                                  SliverPadding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        16, 0, 16, 16,),
+                                    sliver: SliverList.builder(
+                                      itemCount: nearby.length,
+                                      itemBuilder: (context, index) => Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 8),
+                                        child: DiscoveryMemoryCard(
+                                          key: ValueKey(
+                                            nearby[index].id == _selectedId
+                                                ? 'selected-memory-card'
+                                                : nearby[index].id,
+                                          ),
+                                          memory: nearby[index],
+                                          distance: state.hasUserLocation
+                                              ? _distance(nearby[index], state)
+                                              : null,
+                                          selected:
+                                              nearby[index].id == _selectedId,
+                                          onTap: () => openMemoryDetail(
+                                            context,
+                                            nearby[index],
+                                            heroTag:
+                                                'map-memory-${nearby[index].id}',
+                                          ),
+                                          onAuthorTap: () => openPublicProfile(
+                                            context,
+                                            nearby[index],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              if (ref.read(mapProvider.notifier).hasMore)
-                                SliverToBoxAdapter(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: PrimaryAction(
-                                      label: 'Daha fazla anı',
-                                      busy: _loadingMore,
-                                      onPressed: _more,
+                                if (ref.read(mapProvider.notifier).hasMore)
+                                  SliverToBoxAdapter(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: PrimaryAction(
+                                        label: 'Daha fazla anı',
+                                        busy: _loadingMore,
+                                        onPressed: _more,
+                                      ),
                                     ),
                                   ),
-                                ),
-                            ],
-                          ),
-                        ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -366,17 +405,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
         ),
         // Attribution has its own layout space, outside the sheet and navigation.
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton(
-            onPressed: () =>
-                launchUrl(Uri.parse('https://www.openstreetmap.org/copyright')),
-            child: const Text(
-              '© OpenStreetMap contributors',
-              style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-            ),
-          ),
-        ),
+        const MapAttribution(),
       ],
     );
   }

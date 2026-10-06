@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/theme/colors.dart';
 import '../providers/location_provider.dart';
 import 'location_access.dart';
+import 'map_attribution.dart';
 import 'map_tiles.dart';
 
 final draftLocationProvider = StateProvider<LatLng?>((ref) => null);
@@ -156,14 +156,7 @@ class _LocationPickerState extends ConsumerState<LocationPicker> {
               padding: const EdgeInsets.all(12),
               child: Column(
                 children: [
-                  TextButton(
-                    onPressed: () => launchUrl(
-                      Uri.parse(
-                        'https://www.openstreetmap.org/copyright',
-                      ),
-                    ),
-                    child: const Text('© OpenStreetMap contributors'),
-                  ),
+                  const MapAttribution(),
                   const LocationFeedback(),
                   Row(
                     children: [

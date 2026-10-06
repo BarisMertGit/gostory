@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gostory/core/services/auth_service.dart';
 import 'package:gostory/core/services/interactions_service.dart';
+import 'package:gostory/features/map/presentation/widgets/discovery_memory_card.dart';
 import 'package:gostory/features/map/presentation/widgets/memory_bottom_sheet.dart';
 import 'package:gostory/features/memory/presentation/memory_detail_screen.dart';
 import 'package:gostory/shared/models/memory.dart';
@@ -46,6 +47,49 @@ void main() {
     city: 'İstanbul',
     createdAt: DateTime(2026, 9, 29),
   );
+  for (final reducedMotion in [false, true]) {
+    testWidgets(
+        'selected photo opens and returns, reduced motion $reducedMotion',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: overrides,
+          child: MaterialApp(
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(disableAnimations: reducedMotion),
+              child: child!,
+            ),
+            home: Builder(
+              builder: (context) => Scaffold(
+                body: SingleChildScrollView(
+                  child: DiscoveryMemoryCard(
+                    memory: memory,
+                    distance: null,
+                    selected: true,
+                    onTap: () => openMemoryDetail(context, memory,
+                        heroTag: 'map-memory-${memory.id}',),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(find.byType(Hero), reducedMotion ? findsNothing : findsOneWidget);
+      expect(tester.getSize(find.byType(MemoryPhoto)).width, greaterThan(64));
+      await tester.tap(find.byType(MemoryPhoto));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(tester.takeException(), isNull);
+      await tester.pumpAndSettle();
+      expect(find.byType(MemoryDetailScreen), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.byType(DiscoveryMemoryCard), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
   testWidgets('thumbnail opens full note, photo and location details',
       (tester) async {
     await tester.pumpWidget(

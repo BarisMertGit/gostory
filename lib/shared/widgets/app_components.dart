@@ -4,6 +4,38 @@ import '../../app/theme/colors.dart';
 import '../../app/theme/design.dart';
 import '../../app/theme/spacing.dart';
 
+/// Centers short states while allowing all content to scroll on small screens
+/// and with larger system text. No fixed height is imposed on the content.
+class AdaptiveStateBody extends StatelessWidget {
+  const AdaptiveStateBody({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(AppSpacing.screenPadding),
+  });
+  final Widget child;
+  final EdgeInsets padding;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          padding: padding,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: (constraints.maxHeight - padding.vertical)
+                  .clamp(0.0, double.infinity),
+            ),
+            child: Align(
+              alignment: const Alignment(0, -.25),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: child,
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
 class PageHeading extends StatelessWidget {
   const PageHeading({
     super.key,
@@ -289,6 +321,7 @@ class FilterControl extends StatelessWidget {
                         child: TextButton(
                           onPressed: () => onSelected(index),
                           style: TextButton.styleFrom(
+                            animationDuration: AppMotion.duration(context),
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppSpacing.xs,
                               vertical: AppSpacing.sm,

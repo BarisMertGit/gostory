@@ -38,73 +38,99 @@ class DiscoveryMemoryCard extends StatelessWidget {
             onTap: onTap,
             child: Padding(
               padding: const EdgeInsets.all(12),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (memory.photoUrl.isNotEmpty) ...[
+                  if (selected &&
+                      MediaQuery.sizeOf(context).height >= 700 &&
+                      memory.photoUrl.isNotEmpty) ...[
                     ClipRRect(
                       borderRadius: BorderRadius.circular(AppRadii.small),
-                      child: MemoryPhoto(
-                        path: memory.photoUrl,
-                        width: 64,
-                        height: 80,
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: MemoryPhotoTransition(
+                          tag: 'map-memory-${memory.id}',
+                          child: MemoryPhoto(path: memory.photoUrl),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(height: 8),
                   ],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        InkWell(
-                          onTap: onAuthorTap,
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(minHeight: 44),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                '@${memory.creatorUsername}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: AppColors.peach,
-                                  fontSize: 12,
-                                ),
-                              ),
+                  Row(
+                    children: [
+                      if ((!selected ||
+                              MediaQuery.sizeOf(context).height < 700) &&
+                          memory.photoUrl.isNotEmpty) ...[
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(AppRadii.small),
+                          child: MemoryPhotoTransition(
+                            tag: 'map-memory-${memory.id}',
+                            child: MemoryPhoto(
+                              path: memory.photoUrl,
+                              width: selected ? 96 : 64,
+                              height: selected ? 112 : 80,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          memory.textNote,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
-                            height: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          memory.locationLabel,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: AppColors.textSecondary),
-                        ),
-                        Text(
-                          distance == null
-                              ? memoryDateLabel(memory.createdAt)
-                              : memoryDistanceLabel(distance!),
-                          style: const TextStyle(
-                            color: AppColors.mapSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
+                        const SizedBox(width: 12),
                       ],
-                    ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            InkWell(
+                              onTap: onAuthorTap,
+                              child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(minHeight: 44),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    '@${memory.creatorUsername}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: AppColors.peach,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              memory.textNote,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                height: 1.4,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              memory.locationLabel,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: AppColors.textSecondary),
+                            ),
+                            Text(
+                              distance == null
+                                  ? memoryDateLabel(memory.createdAt)
+                                  : memoryDistanceLabel(distance!),
+                              style: const TextStyle(
+                                color: AppColors.mapSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

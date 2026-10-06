@@ -34,3 +34,28 @@ flutter test --no-pub tool/capture_redesign_test.dart
 - Kontrast: yükseltilmiş yüzeyde ana metin 12,77:1, ikincil metin 7,23:1; şeftali aksiyonda koyu metin 8,98:1. Mevcut kontrast testleri geçti.
 
 Simülatördeki kayıt akışı kontrollü kamera ve konum verisi kullanır. Fiziksel kamerayla çekim, gerçek cihazdaki sistem izin ekranları, canlı Firebase yüklemesi ve Android cihaz çalıştırması bu turda doğrulanmadı.
+
+## 6 Ekim 2026 — tamamlayıcı düzenleme
+
+Mevcut petrol/şeftali tasarım sistemi korunarak kalan yerleşim ve erişilebilirlik ayrıntıları tamamlandı:
+
+- `AdaptiveStateBody`: Paylaş başlangıcını kullanılabilir alanda dengeler; küçük ekranlarda ve büyük yazıda kaydırmaya izin verir. Harita ve Profil hata durumları da bu ortak bileşeni kullanır.
+- Harita kontrolleri sürüklenen panelin üstünde kalan gerçek alana göre yatay/dikey yerleşir. Alan daraldığında izin açıklaması açılan panelde erişilebilir kalır.
+- `MapAttribution`: keşif haritası ve manuel konum seçicisinde ortak, en az 44 piksel dokunma alanlı atıf bağlantısı; tarayıcı açılamadığında hata geri bildirimi.
+- Filtre düğmeleri hareket azaltma tercihini izler. Android sistem navigasyon çubuğu ortak yüzey rengini kullanır.
+- 360/390/430 × 640/844 boyutları ve 1×/2× yazıyla 12 düzen testi; kontrollerin panelle çakışmadığı da kontrol edilir.
+- Son test: `flutter test --dart-define=SIMULATOR_PREVIEW=true --no-pub` — 112 başarılı, atlanan test yok.
+- Üç ekran görüntüsü mevcut yerel arşivle yeniden üretildi ve görsel olarak incelendi. Profil görüntüsü öncekiyle aynı; Paylaş ve Harita görüntüleri güncellendi.
+
+Bu turda fiziksel kamera, gerçek cihaz izin ekranları, canlı Firebase aktarımı ve cihaz/simülatör entegrasyon testi çalıştırılmadı. Yukarıdaki simülatör sonucu önceki doğrulamaya aittir.
+
+## Fotoğraf odağı ve geçişler
+
+- Paylaş başlangıcındaki iki iç içe yüzey kaldırıldı; küçük kamera ikonu, güçlü başlık ve tek ana aksiyon kaldı.
+- Profil özeti ve boş durumun dış kartları kaldırıldı. Düzenleme aksiyonu 44 piksel dokunma alanını koruyan metin butonuna dönüştü; anı ızgarası yukarı taşındı.
+- Seçilen harita anısında geniş fotoğraf gösterilir; 700 pikselden kısa ekranlarda metin erişimini korumak için yatay fotoğraflı kart kullanılır. Yeni işaretçi seçiminde panel listesi başa döner.
+- Harita ve profil fotoğrafları ayrı kaynak etiketleriyle detay ekranına Hero geçişi yapar. Geçiş 200 ms; hareket azaltmada Hero ve rota animasyonu kapalıdır.
+- Paylaşım başarısı kısa süreli, onay ikonlu bildirimle gösterilir.
+- Profil, anı ızgarası ve harita ilk yüklemesi için sabit yer tutucular eklendi. Fotoğraf yüklenmesi ve fotoğrafın bulunamaması ayrı durumlardır. Yer tutucular ekran okuyucuya yükleme durumunu bildirir ve sürekli animasyon üretmez.
+- Statik analiz temiz. Tam takımda 114 test geçti; yeni üç yer tutucu testindeki test-sonu SemanticsHandle temizliği düzeltildikten sonra bu üç test de ayrıca geçti. Yeni ileri/geri fotoğraf geçişi ve hareket azaltma testleri başarılı.
+- Üç ekran görüntüsü mevcut arşivle yeniden alındı; Paylaş ve Profil görsel olarak incelendi. Gerçek cihaz kamera/izinleri ve canlı bulut aktarımı bu turda çalıştırılmadı.

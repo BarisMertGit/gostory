@@ -52,7 +52,17 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       if (!mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Anın cihazına kaydedildi.')),
+        const SnackBar(
+          duration: Duration(seconds: 3),
+          content: Row(
+            children: [
+              Icon(Icons.check_circle_outline,
+                  color: AppColors.peach, size: 20,),
+              SizedBox(width: AppSpacing.gap),
+              Expanded(child: Text('Anın cihazına kaydedildi.')),
+            ],
+          ),
+        ),
       );
     });
     WidgetsBinding.instance.scheduleFrame();

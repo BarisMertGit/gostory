@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../app/theme/colors.dart';
 import '../../core/services/photo_cache.dart';
 import '../../core/widgets/demo_scene.dart';
 
@@ -16,6 +17,14 @@ class MemoryPhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loading = Semantics(
+      label: 'Fotoğraf yükleniyor',
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: const ColoredBox(color: AppColors.surfaceVariant),
+      ),
+    );
     final fallback = SizedBox(
       height: height,
       width: width,
@@ -59,7 +68,9 @@ class MemoryPhoto extends StatelessWidget {
                 fit: BoxFit.cover,
                 semanticLabel: 'Anı fotoğrafı',
               )
-            : fallback,
+            : snapshot.connectionState == ConnectionState.waiting
+                ? loading
+                : fallback,
       );
     }
     if (path.startsWith('https://')) {
@@ -73,7 +84,7 @@ class MemoryPhoto extends StatelessWidget {
           fit: BoxFit.cover,
           memCacheWidth: 1600,
           errorWidget: (_, __, ___) => fallback,
-          placeholder: (_, __) => fallback,
+          placeholder: (_, __) => loading,
         ),
       );
     }
@@ -91,4 +102,24 @@ class MemoryPhoto extends StatelessWidget {
       errorBuilder: (_, __, ___) => fallback,
     );
   }
+}
+
+/// Explicit source tags avoid collisions between map and profile photographs.
+class MemoryPhotoTransition extends StatelessWidget {
+  const MemoryPhotoTransition({super.key, required this.child, this.tag});
+  final Object? tag;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) =>
+      tag == null || MediaQuery.disableAnimationsOf(context)
+          ? child
+          : Hero(
+              tag: tag!,
+              flightShuttleBuilder: (_, __, ___, from, to) => DefaultTextStyle(
+                style: DefaultTextStyle.of(to).style,
+                child: (to.widget as Hero).child,
+              ),
+              child: child,
+            );
 }

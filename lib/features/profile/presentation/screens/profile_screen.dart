@@ -18,6 +18,7 @@ import '../../../../shared/providers/cloud_provider.dart';
 import '../../../../shared/providers/memories_provider.dart';
 import '../../../../shared/providers/profile_photo_provider.dart';
 import '../../../../shared/widgets/app_components.dart';
+import '../../../../shared/widgets/content_placeholder.dart';
 import '../../../../shared/widgets/memory_tile.dart';
 import '../../../../shared/widgets/social_icon.dart';
 import '../../../map/presentation/providers/map_provider.dart';
@@ -150,14 +151,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       body: SafeArea(
         bottom: false,
         child: profile.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => EmptyState(
-            icon: Icons.person_outline,
-            title: 'Profil yüklenemedi',
-            message: 'Bağlantını kontrol edip yeniden deneyebilirsin.',
-            action: PrimaryAction(
-              label: 'Profili yeniden yükle',
-              onPressed: () => ref.invalidate(authStateProvider),
+          loading: () => const ProfilePlaceholder(),
+          error: (_, __) => AdaptiveStateBody(
+            child: EmptyState(
+              icon: Icons.person_outline,
+              title: 'Profil yüklenemedi',
+              message: 'Bağlantını kontrol edip yeniden deneyebilirsin.',
+              action: PrimaryAction(
+                label: 'Profili yeniden yükle',
+                onPressed: () => ref.invalidate(authStateProvider),
+              ),
             ),
           ),
           data: (user) {
@@ -212,10 +215,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 if (archive.isLoading && memories == null)
                   const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
+                    child: MemoryGridPlaceholder(),
                   )
                 else if (archive.hasError)
                   SliverToBoxAdapter(
@@ -234,7 +234,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     sliver: SliverToBoxAdapter(
-                      child: SurfacePanel(
+                      child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm,
                         ),
@@ -362,8 +362,8 @@ class _ProfileSummary extends StatelessWidget {
         ),
       ),
     );
-    return SurfacePanel(
-      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -393,9 +393,9 @@ class _ProfileSummary extends StatelessWidget {
                 ?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.md),
-          SecondaryAction(
-            label: 'Profili düzenle',
-            icon: Icons.edit_outlined,
+          TextButton.icon(
+            label: const Text('Profili düzenle'),
+            icon: const Icon(Icons.edit_outlined, size: 16),
             onPressed: onEdit,
           ),
           if (user.socialLinks.isNotEmpty)
@@ -490,7 +490,12 @@ class _ProfileMemoryCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => MemoryTile(
         memory: memory,
-        onTap: () => openMemoryDetail(context, memory),
+        heroTag: 'profile-memory-${memory.id}',
+        onTap: () => openMemoryDetail(
+          context,
+          memory,
+          heroTag: 'profile-memory-${memory.id}',
+        ),
         actions: PopupMenuButton<String>(
           tooltip: 'Anı seçenekleri',
           icon: const Icon(Icons.more_horiz, size: 20),

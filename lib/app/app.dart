@@ -13,6 +13,7 @@ import '../shared/providers/cloud_provider.dart';
 import 'navigation.dart';
 import 'router.dart' as app_router;
 import 'theme/app_theme.dart';
+import 'theme/colors.dart';
 
 /// The root widget of GoStory.
 ///
@@ -79,7 +80,7 @@ class GoStoryApp extends ConsumerWidget {
         statusBarColor: Colors.transparent,
         statusBarBrightness: Brightness.dark,
         statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.black,
+        systemNavigationBarColor: AppColors.surface,
         systemNavigationBarIconBrightness: Brightness.light,
       ),
     );

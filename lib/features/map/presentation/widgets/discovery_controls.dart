@@ -68,6 +68,7 @@ class DiscoveryControls extends StatelessWidget {
             children: [
               _surface(
                 Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     zoomIn,
                     const SizedBox(width: 24, child: Divider(height: 1)),

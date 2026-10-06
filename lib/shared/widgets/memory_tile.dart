@@ -14,10 +14,12 @@ class MemoryTile extends StatelessWidget {
     required this.memory,
     required this.onTap,
     this.actions,
+    this.heroTag,
   });
   final Memory memory;
   final VoidCallback onTap;
   final Widget? actions;
+  final Object? heroTag;
 
   static double extentFor(BuildContext context, double width) {
     final scaler = MediaQuery.textScalerOf(context);
@@ -40,7 +42,10 @@ class MemoryTile extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    MemoryPhoto(path: memory.photoUrl),
+                    MemoryPhotoTransition(
+                      tag: heroTag,
+                      child: MemoryPhoto(path: memory.photoUrl),
+                    ),
                     if (actions != null)
                       Positioned(
                         top: AppSpacing.sm,
