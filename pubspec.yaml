@@ -38,6 +38,9 @@ dependencies:
   firebase_app_check: ^0.4.8
   connectivity_plus: ^7.3.1
   cached_network_image: ^3.4.1
+  flutter_svg: '>=2.0.17 <2.1.0'
+  lottie: 3.3.1
+  flutter_staggered_grid_view: ^0.7.0
 
 dev_dependencies:
   flutter_test:
@@ -49,5 +52,23 @@ dev_dependencies:
   integration_test:
     sdk: flutter
 
+# Keep the new SVG renderer compatible with the declared Dart 3.6 baseline.
+# Newer releases of these transitive dependencies require Dart 3.10+.
+dependency_overrides:
+  vector_graphics: 1.1.18
+  vector_graphics_compiler: 1.1.16
+
 flutter:
   uses-material-design: true
+  assets:
+    - assets/brand/icon.svg
+    - assets/animations/
+    - assets/fonts/PlusJakartaSans-OFL.txt
+    - assets/fonts/Inter-OFL.txt
+  fonts:
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans.ttf
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter.ttf

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gostory/app/theme/app_theme.dart';
 import 'package:gostory/core/services/auth_service.dart';
 import 'package:gostory/core/services/interactions_service.dart';
 import 'package:gostory/features/memory/presentation/memory_detail_screen.dart';
@@ -61,8 +62,9 @@ class _PendingComments extends InteractionsService {
 void main() {
   Future<void> showDetail(
     WidgetTester tester,
-    _PendingComments service,
-  ) async {
+    _PendingComments service, {
+    double textScale = 1,
+  }) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -71,6 +73,13 @@ void main() {
           interactionsServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
+          theme: AppTheme.dark,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(textScale),
+                disableAnimations: true,),
+            child: child!,
+          ),
           home: MemoryDetailScreen(
             memory: Memory(
               id: 'memory',
@@ -89,9 +98,9 @@ void main() {
     );
     addTearDown(service.dispose);
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.widgetWithText(FilledButton, 'Yorumu gönder'),
-      400,
+    expect(
+      find.widgetWithText(FilledButton, 'Yorumu gönder').hitTestable(),
+      findsOneWidget,
     );
     await tester.pumpAndSettle();
   }
@@ -156,6 +165,32 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.sends, 2);
     expect(find.text('Yorumun gönderildi'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+      'sticky comment controls remain usable on a short screen with large text and keyboard',
+      (tester) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    final service = _PendingComments();
+    await showDetail(tester, service, textScale: 2);
+    await tester.enterText(find.byType(TextField), 'Bu anıya bir yorum');
+    tester.view.viewInsets = const FakeViewPadding(bottom: 200);
+    await tester.pumpAndSettle();
+    final send = find.widgetWithText(FilledButton, 'Yorumu gönder');
+    expect(send.hitTestable(), findsOneWidget);
+    expect(tester.getRect(send).bottom, lessThanOrEqualTo(368));
+    await tester.tap(send);
+    await tester.pump();
+    expect(service.sends, 1);
+    expect(find.text('Gönderiliyor…').hitTestable(), findsOneWidget);
+    service.completion.completeError(StateError('offline'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        'Bu anıya bir yorum',);
     expect(tester.takeException(), isNull);
   });
 }

@@ -6,12 +6,18 @@ import 'colors.dart';
 
 /// GoStory typography.
 ///
-/// System sans-serif typography for older shared widgets.
+/// PlusJakartaSans for headings and display text (geometric, modern).
+/// Inter for body and UI text (optimised for readability).
 abstract final class AppTypography {
-  // Use system default sans-serif — clean across iOS and Android.
+  /// Font family used for headings, display text and buttons.
+  static const String heading = 'PlusJakartaSans';
+
+  /// Font family used for body text, inputs and metadata.
+  static const String body = 'Inter';
 
   // ── Display (Splash / hero text) ──
   static const TextStyle display = TextStyle(
+    fontFamily: heading,
     fontSize: 32,
     fontWeight: FontWeight.w600,
     letterSpacing: 3.0,
@@ -21,24 +27,27 @@ abstract final class AppTypography {
 
   // ── Title (Section headings) ──
   static const TextStyle title = TextStyle(
+    fontFamily: heading,
     fontSize: 20,
-    fontWeight: FontWeight.w400,
-    letterSpacing: 1.0,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
     height: 1.3,
     color: AppColors.textPrimary,
   );
 
   // ── Note text (the memory note itself) ──
   static const TextStyle noteInput = TextStyle(
-    fontSize: 18,
+    fontFamily: body,
+    fontSize: 16,
     fontWeight: FontWeight.w400,
-    height: 1.6,
+    height: 1.5,
     letterSpacing: 0.3,
     color: AppColors.textPrimary,
   );
 
   // ── Character counter ──
   static const TextStyle counter = TextStyle(
+    fontFamily: body,
     fontSize: 12,
     fontWeight: FontWeight.w400,
     letterSpacing: 0.5,
@@ -47,6 +56,7 @@ abstract final class AppTypography {
 
   // ── Button text ──
   static const TextStyle button = TextStyle(
+    fontFamily: heading,
     fontSize: 14,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.2,
@@ -55,6 +65,7 @@ abstract final class AppTypography {
 
   // ── Error text ──
   static const TextStyle error = TextStyle(
+    fontFamily: body,
     fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 1.5,
@@ -63,15 +74,17 @@ abstract final class AppTypography {
 
   // ── Hint text ──
   static const TextStyle hint = TextStyle(
-    fontSize: 18,
+    fontFamily: body,
+    fontSize: 16,
     fontWeight: FontWeight.w400,
-    height: 1.6,
+    height: 1.5,
     letterSpacing: 0.3,
     color: AppColors.textHint,
   );
 
   // ── Subtitle ──
   static const TextStyle subtitle = TextStyle(
+    fontFamily: body,
     fontSize: 13,
     fontWeight: FontWeight.w400,
     letterSpacing: 0.2,
@@ -80,6 +93,7 @@ abstract final class AppTypography {
 
   // ── Label (chips, badges, pills) ──
   static const TextStyle label = TextStyle(
+    fontFamily: body,
     fontSize: 11,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.2,
@@ -88,6 +102,7 @@ abstract final class AppTypography {
 
   // ── Tiny (metadata, timestamps) ──
   static const TextStyle tiny = TextStyle(
+    fontFamily: body,
     fontSize: 12,
     fontWeight: FontWeight.w400,
     letterSpacing: 0.8,

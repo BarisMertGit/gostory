@@ -10,8 +10,15 @@ import '../../core/widgets/demo_scene.dart';
 
 /// Shared rendering for archive photos and bundled demo placeholders.
 class MemoryPhoto extends StatelessWidget {
-  const MemoryPhoto({super.key, required this.path, this.height, this.width});
+  const MemoryPhoto({
+    super.key,
+    required this.path,
+    this.height,
+    this.width,
+    this.fit = BoxFit.cover,
+  });
   final String path;
+  final BoxFit fit;
   final double? height;
   final double? width;
 
@@ -29,7 +36,7 @@ class MemoryPhoto extends StatelessWidget {
       height: height,
       width: width,
       child: const ColoredBox(
-        color: Color(0xFF304144),
+        color: AppColors.surfaceVariant,
         child: Center(
           child: Icon(
             Icons.landscape_outlined,
@@ -43,13 +50,13 @@ class MemoryPhoto extends StatelessWidget {
       return SizedBox(
         height: height,
         width: width,
-        child: const ClipRect(
+        child: ClipRect(
           child: FittedBox(
-            fit: BoxFit.cover,
+            fit: fit,
             child: SizedBox(
               width: 400,
               height: 300,
-              child: DemoScene(),
+              child: MediaQuery.withNoTextScaling(child: const DemoScene()),
             ),
           ),
         ),
@@ -65,8 +72,9 @@ class MemoryPhoto extends StatelessWidget {
                 cacheWidth: 1600,
                 height: height,
                 width: width,
-                fit: BoxFit.cover,
+                fit: fit,
                 semanticLabel: 'Anı fotoğrafı',
+                errorBuilder: (_, __, ___) => fallback,
               )
             : snapshot.connectionState == ConnectionState.waiting
                 ? loading
@@ -81,7 +89,7 @@ class MemoryPhoto extends StatelessWidget {
           imageUrl: path,
           height: height,
           width: width,
-          fit: BoxFit.cover,
+          fit: fit,
           memCacheWidth: 1600,
           errorWidget: (_, __, ___) => fallback,
           placeholder: (_, __) => loading,
@@ -97,7 +105,7 @@ class MemoryPhoto extends StatelessWidget {
       image: image,
       height: height,
       width: width,
-      fit: BoxFit.cover,
+      fit: fit,
       semanticLabel: 'Anı fotoğrafı',
       errorBuilder: (_, __, ___) => fallback,
     );

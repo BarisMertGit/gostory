@@ -5,11 +5,25 @@ import 'package:latlong2/latlong.dart';
 
 import '../../app/theme/colors.dart';
 import '../providers/location_provider.dart';
+import '../providers/memories_provider.dart';
 import 'location_access.dart';
 import 'map_attribution.dart';
 import 'map_tiles.dart';
 
 final draftLocationProvider = StateProvider<LatLng?>((ref) => null);
+
+final draftLocationNameProvider =
+    FutureProvider.autoDispose.family<String, LatLng>((ref, point) async {
+  try {
+    return await ref
+            .read(memoryStoreProvider)
+            .resolveCity
+            ?.call(point.latitude, point.longitude) ??
+        '';
+  } catch (_) {
+    return '';
+  }
+});
 
 class LocationChip extends ConsumerWidget {
   const LocationChip({super.key, this.enabled = true});
@@ -17,6 +31,9 @@ class LocationChip extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final point = ref.watch(draftLocationProvider);
+    final name = point == null
+        ? ''
+        : ref.watch(draftLocationNameProvider(point)).valueOrNull ?? '';
     final locating = ref.watch(locationAccessProvider).busy && point == null;
     return Semantics(
       liveRegion: true,
@@ -39,7 +56,7 @@ class LocationChip extends ConsumerWidget {
               ? 'Konum alınıyor…'
               : point == null
                   ? 'Konum ekle'
-                  : '${point.latitude.toStringAsFixed(3)}, ${point.longitude.toStringAsFixed(3)} · Konumu değiştir',
+                  : '${name.isNotEmpty ? name : '${point.latitude.toStringAsFixed(3)}, ${point.longitude.toStringAsFixed(3)}'} · Konumu değiştir',
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 12),
@@ -114,7 +131,7 @@ class _LocationPickerState extends ConsumerState<LocationPicker> {
       body: Column(
         children: [
           const Padding(
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.all(20),
             child: Text('Anının yerini haritaya dokunarak seç.'),
           ),
           Expanded(

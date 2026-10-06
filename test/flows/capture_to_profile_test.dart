@@ -121,7 +121,8 @@ void registerCaptureFlow() {
     FocusManager.instance.primaryFocus?.unfocus();
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Anıyı paylaş'));
+    await tester
+        .ensureVisible(find.widgetWithText(FilledButton, 'Anıyı paylaş'));
     await tester.runAsync(() async {
       await tester.tap(find.widgetWithText(FilledButton, 'Anıyı paylaş'));
       await Future<void>.delayed(const Duration(milliseconds: 300));
@@ -164,7 +165,8 @@ void registerCaptureFlow() {
     }
     await tester.pumpAndSettle();
     expect(find.text('Bu anı yarın da hatırlamak istiyorum.'), findsOneWidget);
-    expect(find.text('1 anı · 1 şehir'), findsOneWidget);
+    expect(find.text('1 anı'), findsWidgets);
+    expect(find.text('1 şehir'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

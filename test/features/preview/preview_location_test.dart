@@ -86,10 +86,12 @@ void main() {
       'Bugün burada güzel bir anı.',
     );
     tester.testTextInput.hide();
-    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Anıyı paylaş'));
+    await tester
+        .ensureVisible(find.widgetWithText(FilledButton, 'Anıyı paylaş'));
     expect(
       tester
-          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Anıyı paylaş'))
+          .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Anıyı paylaş'),)
           .onPressed,
       isNull,
     );
@@ -99,7 +101,8 @@ void main() {
     expect(find.textContaining('Konumu değiştir'), findsOneWidget);
     expect(
       tester
-          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Anıyı paylaş'))
+          .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Anıyı paylaş'),)
           .onPressed,
       isNotNull,
     );

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -20,6 +21,7 @@ import '../../../../shared/providers/profile_photo_provider.dart';
 import '../../../../shared/widgets/app_components.dart';
 import '../../../../shared/widgets/content_placeholder.dart';
 import '../../../../shared/widgets/memory_tile.dart';
+import '../../../../shared/widgets/motion_widgets.dart';
 import '../../../../shared/widgets/social_icon.dart';
 import '../../../map/presentation/providers/map_provider.dart';
 import '../../../memory/presentation/memory_detail_screen.dart';
@@ -69,29 +71,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
+      isScrollControlled: true,
       backgroundColor: AppColors.mapSurface,
       builder: (sheetContext) => SafeArea(
         child: ListView(
           shrinkWrap: true,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           children: [
             const Text(
               'Ayarlar',
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.person_outline),
-              title: const Text('Hesap'),
-              subtitle: const Text('Yerel profilini düzenle'),
+            SettingsRow(
+              icon: Icons.person_outline,
+              title: 'Hesap',
+              description: 'Yerel profilini düzenle',
               onTap: () {
                 Navigator.pop(sheetContext);
                 _edit(user);
               },
             ),
-            ListTile(
+            SettingsRow(
+              icon: Icons.notifications_outlined,
+              title: 'Bildirimler',
+              description: 'Anı yanıtları ve yakın anılar',
               onTap: () {
                 Navigator.pop(sheetContext);
                 Navigator.push(
@@ -101,20 +108,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 );
               },
-              leading: const Icon(Icons.notifications_outlined),
-              title: const Text('Bildirimler'),
-              subtitle: const Text(
-                'Anı yanıtları ve yakın anılar',
-                style: TextStyle(color: AppColors.mapSecondary),
-              ),
             ),
-            ListTile(
-              leading: const Icon(Icons.privacy_tip_outlined),
-              title: const Text('Gizlilik ve izinler'),
-              subtitle: const Text(
-                'Kamera, fotoğraf ve konum izinlerini cihaz ayarlarında yönet.',
-                style: TextStyle(color: AppColors.mapSecondary),
-              ),
+            SettingsRow(
+              icon: Icons.privacy_tip_outlined,
+              title: 'Gizlilik ve izinler',
+              description:
+                  'Kamera, fotoğraf ve konum izinlerini cihaz ayarlarında yönet.',
               onTap: () async {
                 final opened = await Geolocator.openAppSettings();
                 if (!opened && sheetContext.mounted) {
@@ -128,12 +127,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 }
               },
             ),
-            const ListTile(
-              leading: Icon(Icons.info_outline),
-              title: Text('Hakkında'),
-              subtitle: Text(
-                'Anıların cihazda saklanır. Bulut bağlantısı etkinse seçtiğin görünürlükle senkronize edilir.',
-                style: TextStyle(color: AppColors.mapSecondary),
+            SettingsRow(
+              icon: Icons.info_outline,
+              title: 'Hakkında',
+              description: 'Anılarının saklanması ve paylaşılması',
+              onTap: () => showDialog<void>(
+                context: sheetContext,
+                builder: (context) => AlertDialog(
+                  title: const Text('GoStory'),
+                  content: const Text(
+                    'Anıların cihazda saklanır. Bulut bağlantısı etkinse seçtiğin görünürlükle senkronize edilir.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Tamam'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -170,13 +181,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             return CustomScrollView(
               key: const PageStorageKey('profile-scroll'),
               slivers: [
-                SliverToBoxAdapter(
-                  child: PageHeading(
-                    title: 'Profil',
-                    trailing: IconButton(
+                SliverAppBar(
+                  pinned: true,
+                  automaticallyImplyLeading: false,
+                  toolbarHeight:
+                      MediaQuery.textScalerOf(context).scale(28) * 1.2 + 16,
+                  expandedHeight:
+                      MediaQuery.textScalerOf(context).scale(28) * 1.2 + 60,
+                  actions: [
+                    IconButton(
                       tooltip: 'Ayarlar',
                       onPressed: () => _settings(user),
                       icon: const Icon(Icons.settings_outlined),
+                    ),
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    titlePadding: const EdgeInsets.fromLTRB(20, 0, 64, 12),
+                    expandedTitleScale: 1,
+                    title: Text(
+                      'Profil',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    background: const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppColors.gradientEnd, AppColors.background],
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -188,7 +221,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       children: [
                         _ProfileSummary(
                           user: user,
-                          stats: memories == null ? null : _stats(memories),
+                          memoryCount: memories?.length,
+                          cityCount:
+                              memories == null ? 0 : _cityCount(memories),
                           onEdit: () => _edit(user),
                           onOpenLink: _open,
                         ),
@@ -202,6 +237,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
                             ),
+                          ),
+                        if (archive.hasError && memories != null)
+                          const StatusNotice(
+                            message:
+                                'Arşiv yenilenemedi. Kayıtlı anıların gösteriliyor.',
+                            kind: StatusKind.error,
                           ),
                         const SizedBox(height: AppSpacing.lg),
                         SectionHeading(
@@ -217,7 +258,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const SliverToBoxAdapter(
                     child: MemoryGridPlaceholder(),
                   )
-                else if (archive.hasError)
+                else if (archive.hasError && memories == null)
                   SliverToBoxAdapter(
                     child: EmptyState(
                       icon: Icons.cloud_off_outlined,
@@ -267,24 +308,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     160)
                                 .floor()
                                 .clamp(1, 3);
-                        final width =
-                            (constraints.crossAxisExtent - (columns - 1) * 12) /
-                                columns;
-                        return SliverGrid(
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: columns,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            mainAxisExtent:
-                                MemoryTile.extentFor(context, width),
-                          ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) => _ProfileMemoryCard(
+                        return SliverMasonryGrid.count(
+                          crossAxisCount: columns,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childCount: memories.length.clamp(0, _visibleCount),
+                          itemBuilder: (context, index) => Entrance(
+                            order: index,
+                            child: _ProfileMemoryCard(
                               memory: memories[index],
                               canDelete: true,
+                              photoAspectRatio: columns == 1
+                                  ? 1
+                                  : (index % 3 == 0 ? .82 : 1.12),
                             ),
-                            childCount: memories.length.clamp(0, _visibleCount),
                           ),
                         );
                       },
@@ -306,46 +343,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  String _stats(List<Memory> memories) {
+  int _cityCount(List<Memory> memories) {
     final cities =
         memories.map((m) => m.city.trim()).where((c) => c.isNotEmpty).toSet();
-    return '${memories.length} anı${cities.isEmpty ? '' : ' · ${cities.length} şehir'}';
+    return cities.length;
   }
 }
 
 class _ProfileSummary extends StatelessWidget {
   const _ProfileSummary({
     required this.user,
-    required this.stats,
+    required this.memoryCount,
+    required this.cityCount,
     required this.onEdit,
     required this.onOpenLink,
   });
   final LocalUser user;
-  final String? stats;
+  final int? memoryCount;
+  final int cityCount;
   final VoidCallback onEdit;
   final ValueChanged<String> onOpenLink;
 
   @override
   Widget build(BuildContext context) {
-    final identity = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '@${user.username}',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        if (stats != null) ...[
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            stats!,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
-      ],
-    );
     final avatar = Tooltip(
       message: 'Profil fotoğrafını değiştir',
       child: InkWell(
@@ -367,23 +387,27 @@ class _ProfileSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (MediaQuery.textScalerOf(context).scale(18) > 27)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          ProfileIdentity(username: user.username, avatar: avatar),
+          if (memoryCount != null) ...[
+            const SizedBox(height: AppSpacing.gap),
+            Wrap(
+              spacing: 16,
+              runSpacing: 8,
               children: [
-                avatar,
-                const SizedBox(height: AppSpacing.md),
-                identity,
-              ],
-            )
-          else
-            Row(
-              children: [
-                avatar,
-                const SizedBox(width: AppSpacing.md),
-                Expanded(child: identity),
+                AnimatedCounter(
+                  value: memoryCount!,
+                  label: 'anı',
+                  icon: Icons.photo_library_outlined,
+                ),
+                if (cityCount > 0)
+                  AnimatedCounter(
+                    value: cityCount,
+                    label: 'şehir',
+                    icon: Icons.location_city_outlined,
+                  ),
               ],
             ),
+          ],
           const SizedBox(height: AppSpacing.md),
           Text(
             user.bio.isEmpty ? 'Kendinden kısaca bahset' : user.bio,
@@ -393,7 +417,8 @@ class _ProfileSummary extends StatelessWidget {
                 ?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.md),
-          TextButton.icon(
+          OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(shape: const StadiumBorder()),
             label: const Text('Profili düzenle'),
             icon: const Icon(Icons.edit_outlined, size: 16),
             onPressed: onEdit,
@@ -405,10 +430,12 @@ class _ProfileSummary extends StatelessWidget {
                 spacing: AppSpacing.xs,
                 children: [
                   for (final link in user.socialLinks.entries)
-                    IconButton(
-                      tooltip: link.key,
-                      onPressed: () => onOpenLink(link.value),
-                      icon: SocialIcon(link.key),
+                    PressFeedback(
+                      child: IconButton(
+                        tooltip: link.key,
+                        onPressed: () => onOpenLink(link.value),
+                        icon: SocialIcon(link.key),
+                      ),
                     ),
                 ],
               ),
@@ -423,9 +450,11 @@ class _ProfileMemoryCard extends ConsumerWidget {
   const _ProfileMemoryCard({
     required this.memory,
     required this.canDelete,
+    this.photoAspectRatio = 1,
   });
   final Memory memory;
   final bool canDelete;
+  final double photoAspectRatio;
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -490,6 +519,7 @@ class _ProfileMemoryCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => MemoryTile(
         memory: memory,
+        photoAspectRatio: photoAspectRatio,
         heroTag: 'profile-memory-${memory.id}',
         onTap: () => openMemoryDetail(
           context,
@@ -626,9 +656,9 @@ class _ProfileEditorState extends ConsumerState<_ProfileEditor> {
         canPop: !_busy,
         child: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
+            20,
             24,
-            24,
-            24,
+            20,
             MediaQuery.viewInsetsOf(context).bottom +
                 MediaQuery.paddingOf(context).bottom +
                 24,
@@ -730,9 +760,9 @@ class _ProfileEditorState extends ConsumerState<_ProfileEditor> {
                       if (!_visibleLinks.contains(name))
                         PopupMenuItem(value: name, child: Text(name)),
                   ],
-                  child: const SizedBox(
-                    height: 48,
-                    child: Row(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 48),
+                    child: const Row(
                       children: [
                         Icon(Icons.add_link, color: AppColors.peach),
                         SizedBox(width: 8),

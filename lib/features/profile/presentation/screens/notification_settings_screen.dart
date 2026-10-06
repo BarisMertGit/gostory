@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/services/notifications_service.dart';
+import '../../../../shared/widgets/app_components.dart';
 import '../../../../shared/widgets/location_access.dart';
 
 class NotificationSettingsScreen extends ConsumerStatefulWidget {
@@ -57,7 +59,7 @@ class _NotificationSettingsScreenState
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: const Text('Bildirimler')),
         body: ListView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
           children: [
             const Text('Anına gelen yorumları bildirim olarak al.'),
             SwitchListTile.adaptive(
@@ -77,8 +79,7 @@ class _NotificationSettingsScreenState
               onPressed: _busy ? null : () => _save(false),
               child: const Text('Bildirimleri kapat'),
             ),
-            if (_message != null)
-              Semantics(liveRegion: true, child: Text(_message!)),
+            if (_message != null) StatusNotice(message: _message!),
           ],
         ),
       );

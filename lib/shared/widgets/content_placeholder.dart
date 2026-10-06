@@ -134,24 +134,28 @@ class MapPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
         label: 'Harita ve anılar yükleniyor',
         liveRegion: true,
-        child: const ExcludeSemantics(
+        child: ExcludeSemantics(
           child: Column(
             children: [
-              PageHeading(
+              const PageHeading(
                 title: 'Keşfet',
                 subtitle: 'Yakınındaki anıları keşfet',
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: PlaceholderBlock(height: 52),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: FilterControl(
+                  labels: const ['Yakınımda', 'Yeni', 'Popüler'],
+                  selected: 1,
+                  onSelected: (_) {},
+                ),
               ),
-              Expanded(
+              const Expanded(
                 child: ColoredBox(
                   color: AppColors.surface,
                   child: SizedBox.expand(),
                 ),
               ),
-              Padding(
+              const Padding(
                 padding: EdgeInsets.all(AppSpacing.screenPadding),
                 child: PlaceholderBlock(height: 20),
               ),

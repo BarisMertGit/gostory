@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -17,6 +18,7 @@ import '../../../../shared/widgets/content_placeholder.dart';
 import '../../../../shared/widgets/location_access.dart';
 import '../../../../shared/widgets/location_permission_band.dart';
 import '../../../../shared/widgets/map_attribution.dart';
+import '../../../../shared/widgets/motion_widgets.dart';
 import '../../../memory/presentation/memory_detail_screen.dart';
 import '../../../profile/presentation/screens/public_profile_screen.dart';
 import '../../domain/map_state.dart';
@@ -239,6 +241,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                         },
                       ),
                     ),
+                    if (expanded)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(
+                                sigmaX: 2 * visibleExtent,
+                                sigmaY: 2 * visibleExtent,),
+                            child: ColoredBox(
+                                color: AppColors.background
+                                    .withValues(alpha: .06),),
+                          ),
+                        ),
+                      ),
                     Positioned(
                       top: AppSpacing.gap,
                       left: AppSpacing.gap,
@@ -349,33 +364,46 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                 else
                                   SliverPadding(
                                     padding: const EdgeInsets.fromLTRB(
-                                        16, 0, 16, 16,),
+                                      16,
+                                      0,
+                                      16,
+                                      16,
+                                    ),
                                     sliver: SliverList.builder(
                                       itemCount: nearby.length,
                                       itemBuilder: (context, index) => Padding(
                                         padding:
                                             const EdgeInsets.only(bottom: 8),
-                                        child: DiscoveryMemoryCard(
-                                          key: ValueKey(
-                                            nearby[index].id == _selectedId
-                                                ? 'selected-memory-card'
-                                                : nearby[index].id,
-                                          ),
-                                          memory: nearby[index],
-                                          distance: state.hasUserLocation
-                                              ? _distance(nearby[index], state)
-                                              : null,
-                                          selected:
-                                              nearby[index].id == _selectedId,
-                                          onTap: () => openMemoryDetail(
-                                            context,
-                                            nearby[index],
-                                            heroTag:
-                                                'map-memory-${nearby[index].id}',
-                                          ),
-                                          onAuthorTap: () => openPublicProfile(
-                                            context,
-                                            nearby[index],
+                                        child: Entrance(
+                                          order: index,
+                                          child: DiscoveryMemoryCard(
+                                            key: ValueKey(
+                                              nearby[index].id == _selectedId
+                                                  ? 'selected-memory-card'
+                                                  : nearby[index].id,
+                                            ),
+                                            availableHeight:
+                                                _mapHeight * visibleExtent -
+                                                    headerHeight -
+                                                    100,
+                                            memory: nearby[index],
+                                            distance: state.hasUserLocation
+                                                ? _distance(
+                                                    nearby[index], state,)
+                                                : null,
+                                            selected:
+                                                nearby[index].id == _selectedId,
+                                            onTap: () => openMemoryDetail(
+                                              context,
+                                              nearby[index],
+                                              heroTag:
+                                                  'map-memory-${nearby[index].id}',
+                                            ),
+                                            onAuthorTap: () =>
+                                                openPublicProfile(
+                                              context,
+                                              nearby[index],
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -445,12 +473,14 @@ class _PanelHeader extends SliverPersistentHeaderDelegate {
             onTap: onTap,
             child: Column(
               children: [
-                Container(
-                  width: 32,
+                AnimatedContainer(
+                  duration: AppMotion.duration(context),
+                  curve: AppMotion.standardCurve,
+                  width: expanded ? 48 : 32,
                   height: 4,
                   margin: const EdgeInsets.only(top: 10, bottom: 10),
                   decoration: BoxDecoration(
-                    color: AppColors.divider,
+                    color: expanded ? AppColors.peach : AppColors.divider,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),

@@ -67,8 +67,11 @@ void main() {
                     memory: memory,
                     distance: null,
                     selected: true,
-                    onTap: () => openMemoryDetail(context, memory,
-                        heroTag: 'map-memory-${memory.id}',),
+                    onTap: () => openMemoryDetail(
+                      context,
+                      memory,
+                      heroTag: 'map-memory-${memory.id}',
+                    ),
                   ),
                 ),
               ),
@@ -116,7 +119,8 @@ void main() {
     });
     await tester.pumpAndSettle();
     expect(find.byType(MemoryDetailScreen), findsOneWidget);
-    await tester.drag(find.byType(ListView).last, const Offset(0, -450));
+    await tester.drag(find.byKey(const ValueKey('memory-detail-scroll')),
+        const Offset(0, -450),);
     await tester.runAsync(() async {
       await Future<void>.delayed(const Duration(milliseconds: 200));
     });
@@ -138,7 +142,8 @@ void main() {
       ),
     );
     expect(find.byIcon(Icons.landscape_outlined), findsOneWidget);
-    await tester.drag(find.byType(ListView).last, const Offset(0, -450));
+    await tester.drag(find.byKey(const ValueKey('memory-detail-scroll')),
+        const Offset(0, -450),);
     await tester.runAsync(() async {
       await Future<void>.delayed(const Duration(milliseconds: 200));
     });

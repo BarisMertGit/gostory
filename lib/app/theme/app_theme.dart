@@ -3,31 +3,77 @@ import 'package:flutter/services.dart';
 
 import 'colors.dart';
 import 'design.dart';
+import 'typography.dart' as app_type;
 
 abstract final class AppTheme {
   static ThemeData get dark {
-    final base = ThemeData(useMaterial3: true, brightness: Brightness.dark);
+    final base = ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      fontFamily: app_type.AppTypography.body,
+    );
     const text = TextTheme(
       headlineMedium: TextStyle(
+        fontFamily: app_type.AppTypography.heading,
         fontSize: 28,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         height: 1.2,
         letterSpacing: -.5,
       ),
-      headlineSmall:
-          TextStyle(fontSize: 26, fontWeight: FontWeight.w600, height: 1.2),
-      titleLarge:
-          TextStyle(fontSize: 20, fontWeight: FontWeight.w600, height: 1.3),
-      titleMedium:
-          TextStyle(fontSize: 18, fontWeight: FontWeight.w600, height: 1.3),
-      titleSmall:
-          TextStyle(fontSize: 15, fontWeight: FontWeight.w600, height: 1.4),
-      bodyLarge: TextStyle(fontSize: 16, height: 1.5),
-      bodyMedium: TextStyle(fontSize: 14, height: 1.5),
-      bodySmall: TextStyle(fontSize: 12, height: 1.45),
-      labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-      labelMedium: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-      labelSmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+      headlineSmall: TextStyle(
+        fontFamily: app_type.AppTypography.heading,
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        height: 1.2,
+      ),
+      titleLarge: TextStyle(
+        fontFamily: app_type.AppTypography.heading,
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
+      ),
+      titleMedium: TextStyle(
+        fontFamily: app_type.AppTypography.heading,
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
+      ),
+      titleSmall: TextStyle(
+        fontFamily: app_type.AppTypography.heading,
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        height: 1.4,
+      ),
+      bodyLarge: TextStyle(
+        fontFamily: app_type.AppTypography.body,
+        fontSize: 16,
+        height: 1.5,
+      ),
+      bodyMedium: TextStyle(
+        fontFamily: app_type.AppTypography.body,
+        fontSize: 14,
+        height: 1.5,
+      ),
+      bodySmall: TextStyle(
+        fontFamily: app_type.AppTypography.body,
+        fontSize: 12,
+        height: 1.45,
+      ),
+      labelLarge: TextStyle(
+        fontFamily: app_type.AppTypography.heading,
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+      ),
+      labelMedium: TextStyle(
+        fontFamily: app_type.AppTypography.body,
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
+      labelSmall: TextStyle(
+        fontFamily: app_type.AppTypography.body,
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+      ),
     );
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadii.control),
@@ -63,8 +109,9 @@ abstract final class AppTheme {
         centerTitle: false,
         titleSpacing: 20,
         titleTextStyle: TextStyle(
-          fontSize: 26,
-          fontWeight: FontWeight.w600,
+          fontFamily: app_type.AppTypography.heading,
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
         ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
@@ -78,6 +125,11 @@ abstract final class AppTheme {
           disabledForegroundColor: AppColors.textSecondary,
           minimumSize: const Size(AppSizes.touchTarget, 48),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          textStyle: const TextStyle(
+            fontFamily: app_type.AppTypography.heading,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
           shape: shape,
         ),
       ),
@@ -88,6 +140,11 @@ abstract final class AppTheme {
           side: const BorderSide(color: AppColors.divider),
           minimumSize: const Size(AppSizes.touchTarget, AppSizes.touchTarget),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          textStyle: const TextStyle(
+            fontFamily: app_type.AppTypography.heading,
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
           shape: shape,
         ),
       ),
@@ -95,6 +152,11 @@ abstract final class AppTheme {
         style: TextButton.styleFrom(
           foregroundColor: AppColors.peach,
           minimumSize: const Size(AppSizes.touchTarget, AppSizes.touchTarget),
+          textStyle: const TextStyle(
+            fontFamily: app_type.AppTypography.heading,
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
           shape: shape,
         ),
       ),
@@ -108,6 +170,7 @@ abstract final class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
+        shadowColor: AppColors.peach.withValues(alpha: 0.08),
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.card),
@@ -124,14 +187,20 @@ abstract final class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: AppColors.surfaceVariant,
         contentPadding: const EdgeInsets.all(16),
-        hintStyle: const TextStyle(color: AppColors.textSecondary),
-        labelStyle: const TextStyle(color: AppColors.textSecondary),
+        hintStyle: const TextStyle(
+          fontFamily: app_type.AppTypography.body,
+          color: AppColors.textSecondary,
+        ),
+        labelStyle: const TextStyle(
+          fontFamily: app_type.AppTypography.body,
+          color: AppColors.textSecondary,
+        ),
         border: border,
         enabledBorder: border,
         focusedBorder: border.copyWith(
-          borderSide: const BorderSide(color: AppColors.peach),
+          borderSide: const BorderSide(color: AppColors.peach, width: 1.5),
         ),
         errorBorder: border.copyWith(
           borderSide: const BorderSide(color: AppColors.error),
@@ -144,13 +213,17 @@ abstract final class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         height: AppSizes.navigation,
-        backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.accentGlow,
+        backgroundColor: Colors.transparent,
+        indicatorColor: AppColors.peachGlow,
         surfaceTintColor: Colors.transparent,
+        elevation: 0,
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+            fontFamily: app_type.AppTypography.body,
+            fontSize: 11,
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.w600
+                : FontWeight.w500,
             color: states.contains(WidgetState.selected)
                 ? AppColors.peach
                 : AppColors.textSecondary,
@@ -166,8 +239,11 @@ abstract final class AppTheme {
         ),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.surfaceVariant,
-        contentTextStyle: const TextStyle(color: AppColors.textPrimary),
+        backgroundColor: AppColors.surfaceElevated,
+        contentTextStyle: const TextStyle(
+          fontFamily: app_type.AppTypography.body,
+          color: AppColors.textPrimary,
+        ),
         behavior: SnackBarBehavior.floating,
         shape: shape,
       ),

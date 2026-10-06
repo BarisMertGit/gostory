@@ -17,17 +17,19 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       final semantics = tester.ensureSemantics();
 
-      await tester.pumpWidget(MaterialApp(
-        theme: AppTheme.dark,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: const TextScaler.linear(2),
-            disableAnimations: true,
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: const TextScaler.linear(2),
+              disableAnimations: true,
+            ),
+            child: child!,
           ),
-          child: child!,
+          home: Scaffold(body: SafeArea(child: entry.value)),
         ),
-        home: Scaffold(body: SafeArea(child: entry.value)),
-      ),);
+      );
       await tester.pumpAndSettle();
       expect(find.bySemanticsLabel(entry.key), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);

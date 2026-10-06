@@ -32,9 +32,6 @@ void main() {
   testWidgets(
       'capture the three redesigned screens with the existing local archive',
       (tester) async {
-    final previousShadows = debugDisableShadows;
-    debugDisableShadows = false;
-    addTearDown(() => debugDisableShadows = previousShadows);
     final archivePath = Platform.environment['GOSTORY_ARCHIVE_DIR'] ??
         '${Platform.environment['HOME']}/Library/Containers/com.gostory.gostory/Data/Library/Application Support/com.gostory.gostory';
     late LocalUser user;
@@ -70,34 +67,31 @@ void main() {
     tester.view.physicalSize = const Size(1170, 2532);
     tester.view.devicePixelRatio = 3;
     final boundaryKey = GlobalKey();
-    await tester.runAsync(() async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            authServiceProvider.overrideWithValue(_ProfileSnapshot(user)),
-            memoryStoreProvider.overrideWithValue(_ArchiveSnapshot(rows)),
-          ],
-          child: MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.dark,
-            builder: (context, child) => RepaintBoundary(
-              key: boundaryKey,
-              child: MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  padding: const EdgeInsets.only(top: 44, bottom: 24),
-                ),
-                child: child!,
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authServiceProvider.overrideWithValue(_ProfileSnapshot(user)),
+          memoryStoreProvider.overrideWithValue(_ArchiveSnapshot(rows)),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.dark,
+          builder: (context, child) => RepaintBoundary(
+            key: boundaryKey,
+            child: MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                padding: const EdgeInsets.only(top: 44, bottom: 24),
               ),
+              child: child!,
             ),
-            home: const HomeScreen(),
           ),
+          home: const HomeScreen(),
         ),
-      );
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-      await tester.pump();
-      await Future<void>.delayed(const Duration(seconds: 4));
-      await tester.pump();
-    });
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester
+        .runAsync(() => Future<void>.delayed(const Duration(seconds: 4)));
     await tester.pumpAndSettle();
     for (final screen
         in {'map': 'Harita', 'share': 'Paylaş', 'profile': 'Profil'}.entries) {
@@ -119,7 +113,6 @@ void main() {
         image.dispose();
       });
     }
-    debugDisableShadows = previousShadows;
     expect(tester.takeException(), isNull);
   });
 }

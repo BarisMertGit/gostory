@@ -10,6 +10,7 @@ import '../../../../shared/widgets/app_components.dart';
 import '../../../../shared/widgets/location_access.dart';
 import '../../../../shared/widgets/location_chip.dart';
 import '../../../../shared/widgets/memory_photo.dart';
+import '../../../../shared/widgets/motion_widgets.dart';
 import '../providers/preview_provider.dart';
 
 class PreviewScreen extends ConsumerStatefulWidget {
@@ -56,8 +57,11 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
           duration: Duration(seconds: 3),
           content: Row(
             children: [
-              Icon(Icons.check_circle_outline,
-                  color: AppColors.peach, size: 20,),
+              Icon(
+                Icons.check_circle_outline,
+                color: AppColors.peach,
+                size: 20,
+              ),
               SizedBox(width: AppSpacing.gap),
               Expanded(child: Text('Anın cihazına kaydedildi.')),
             ],
@@ -103,7 +107,28 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                       borderRadius: BorderRadius.circular(AppRadii.card),
                       child: AspectRatio(
                         aspectRatio: 4 / 3,
-                        child: MemoryPhoto(path: photoPath),
+                        child: ParallaxPhoto(
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              MemoryPhoto(path: photoPath),
+                              const IgnorePointer(
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.bottomCenter,
+                                      end: Alignment.center,
+                                      colors: [
+                                        Color(0x550B1718),
+                                        Colors.transparent,
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                     Align(
@@ -117,68 +142,90 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    TextField(
-                      controller: _note,
-                      maxLength: 100,
-                      minLines: 2,
-                      maxLines: 4,
-                      enabled: !state.isSubmitting,
-                      scrollPadding: const EdgeInsets.all(AppSpacing.lg),
-                      decoration: const InputDecoration(
-                        labelText: 'Kısa bir not',
-                        hintText: 'Bu anın hikâyesi ne?',
-                        alignLabelWithHint: true,
+                    GlassSurface(
+                      child: TextField(
+                        controller: _note,
+                        maxLength: 100,
+                        minLines: 2,
+                        maxLines: 4,
+                        enabled: !state.isSubmitting,
+                        scrollPadding: const EdgeInsets.all(AppSpacing.lg),
+                        decoration: const InputDecoration(
+                          labelText: 'Kısa bir not',
+                          hintText: 'Bu anın hikâyesi ne?',
+                          alignLabelWithHint: true,
+                          filled: true,
+                          fillColor: Colors.transparent,
+                        ),
+                        onChanged: ref
+                            .read(previewProvider(photoPath).notifier)
+                            .updateNote,
                       ),
-                      onChanged: ref
-                          .read(previewProvider(photoPath).notifier)
-                          .updateNote,
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: LocationChip(enabled: !state.isSubmitting),
+                      child: Entrance(
+                        horizontal: true,
+                        child: LocationChip(enabled: !state.isSubmitting),
+                      ),
                     ),
                     if (location == null && access.failure != null)
                       const LocationFeedback(),
                     if (state.validationError != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: AppSpacing.gap),
-                        child: Semantics(
-                          liveRegion: true,
-                          child: Text(
-                            state.validationError!,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(color: AppColors.error),
-                          ),
-                        ),
+                      StatusNotice(
+                        message: state.validationError!,
+                        kind: StatusKind.error,
                       ),
                     const SizedBox(height: AppSpacing.lg),
-                    SurfacePanel(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.xs,
+                    AnimatedContainer(
+                      duration: AppMotion.duration(context),
+                      decoration: BoxDecoration(
+                        color: state.isPublic
+                            ? AppColors.accentGlow
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(AppRadii.control),
                       ),
-                      child: SwitchListTile.adaptive(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          'Herkese açık',
-                          style: Theme.of(context).textTheme.titleSmall,
+                      child: Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(AppRadii.control),
+                        child: SwitchListTile(
+                          // Supported by the declared Flutter 3.27 baseline.
+                          // ignore: deprecated_member_use
+                          activeColor: AppColors.onPeach,
+                          activeTrackColor: AppColors.peach,
+                          inactiveThumbColor: AppColors.textSecondary,
+                          inactiveTrackColor: AppColors.surfaceVariant,
+                          thumbIcon: WidgetStateProperty.resolveWith(
+                            (states) => Icon(
+                              states.contains(WidgetState.selected)
+                                  ? Icons.public
+                                  : Icons.lock_outline,
+                              size: 14,
+                              color: states.contains(WidgetState.selected)
+                                  ? AppColors.peach
+                                  : AppColors.surfaceVariant,
+                            ),
+                          ),
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            'Herkese açık',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          subtitle: Text(
+                            'Fotoğraf, not ve konum diğer kullanıcılara görünür.',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(color: AppColors.textSecondary),
+                          ),
+                          value: state.isPublic,
+                          onChanged: state.isSubmitting
+                              ? null
+                              : ref
+                                  .read(previewProvider(photoPath).notifier)
+                                  .setPublic,
                         ),
-                        subtitle: Text(
-                          'Fotoğraf, not ve konum diğer kullanıcılara görünür.',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: AppColors.textSecondary),
-                        ),
-                        value: state.isPublic,
-                        onChanged: state.isSubmitting
-                            ? null
-                            : ref
-                                .read(previewProvider(photoPath).notifier)
-                                .setPublic,
                       ),
                     ),
                   ],

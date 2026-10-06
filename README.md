@@ -1,29 +1,41 @@
 # GoStory
 
-Flutter ile fotoğraf, not ve konumdan anı arşivi oluşturma; isteğe bağlı herkese açık keşif ve sosyal etkileşim.
+Flutter ile konuma bağlı kullanıcı adlı fotoğraf ve not uygulaması.
+
+## iOS simülatöründe çalıştırma
 
 ```sh
 flutter pub get
-flutter run --dart-define=SIMULATOR_PREVIEW=true
-flutter analyze
-flutter test
-flutter test --dart-define=SIMULATOR_PREVIEW=true
+open -a Simulator
+flutter devices
+flutter run -d <simulator-id> --dart-define=SIMULATOR_PREVIEW=true
 ```
 
-Varsayılan olarak cihazdaki kalıcı arşiv ve yerel profil kullanılır. Firebase yapılandırılıp `FIREBASE_ENABLED=true` verildiğinde özel/herkese açık paylaşım, public profiller, bulut beğeni/yorumları, gerçek ziyaret sayaçları ve FCM kullanılabilir. Firebase proje dosyaları bu çalışma alanında bulunmadığı için canlı hizmetler henüz etkin değildir.
+VS Code'da iOS simülatörünü seçip **GoStory · Simülatör demo** yapılandırmasını da başlatabilirsin.
 
-Fotoğraf önce cihazda saklanır. Public/private seçimi taslaktan kayda taşınır; eski kayıtlar özel kalır. Yükleme ve silmeler bağlantı gelince, uygulama çalışırken tekrar denenir. Kuyruk sürüm bilgisi eşzamanlı görünürlük/silme işlemlerini korur. Profil kartındaki kilit/dünya düğmesi görünürlüğü değiştirir.
 
-Anı oluşturma kameradan fotoğraf çekerek başlar; galeri yalnızca profil fotoğrafı için kullanılır. Önizlemede konum boşsa GPS bir kez istenir ve alınırken ilerleme gösterilir. Konum haritadan değiştirilebilir; geciken GPS sonucu elle seçilen yeri değiştirmez. Profil yalnızca kullanıcının kendi anılarını gösterir.
+Demo modunda kamera yerine çevrimdışı İstanbul illüstrasyonu gösterilir. Deklanşör fotoğraf önizlemesini açar; not yazıp BIRAK düğmesiyle akışı deneyebilirsin. HARİTA düğmesi gerçek dünya haritasını açar: sürükleyerek farklı şehirlere ve ülkelere gidebilir, iki parmakla veya +/− düğmeleriyle yakınlaştırabilirsin. Konum düğmesi başlangıç konumunu açar. Alt panelin başlığına dokunarak veya tutamacını sürükleyerek bölgedeki anıları açabilirsin. Yakınımda / Yeni / Popüler seçenekleri mevcut veriyi mesafe, tarih ve görüntülenme sayısına göre
+ sıralar. Panel sayısı görünen harita sınırlarından hesaplanır; karta dokunmak haritayı anıya odaklar. Anı bırak düğmesi mevcut kamera akışını açar.
 
-Haritada başkasının anısını seçmek kullanıcı profiline gider; paylaşılmış biyografi/sosyal bağlantılar ve seçilen anıya bağlantı gösterilir. Detay ekranında tekil ziyaretler, beğeni ve son 50 yorum bulunur. Yeni yorumlar ve 1 km yakınlıktaki yeni anılar için bildirimler Profil → Ayarlar → Bildirimler’den açılır. Yakınlık son izinli konumla eşleştirilir; arka planda sürekli konum takibi yapılmaz.
+Harita tüm çalıştırma modlarında OpenStreetMap üzerinden yüklenir; internet gerekir, API anahtarı gerekmez. Demo konumu İstanbul’dur. Diğer bölgelerde gezilebilir ancak anılar halen yerel örnek verilerdir; sunucudan dünya genelinde paylaşım yükleme henüz bağlı değildir. OpenStreetMap kaynak bağlantısı harita ekranında görünür; standart ağ sağlayıcısının yerleşik karo önbelleği kullanılır. [Karo kullanım politikası](https://operations.osmfoundation.org/policies/tiles/).
 
-Yorumlar düğmeden veya klavyenin gönder eyleminden iletilir. Boş yorum gönderilemez; işlem sırasında ilerleme, tamamlandığında başarı mesajı gösterilir. Hata durumunda yorum metni korunur. Yeni yorumlar tarih ve saat bilgisiyle gösterilir.
+Firebase şu anda devre dışıdır; not gönderimi yalnızca demo geri bildirimi verir, kalıcı kayıt yapmaz.
 
-Keşif Firebase’de 40 kayıtlık cursor sayfaları kullanır; profil kartları 20’lik gruplarla oluşturulur. Ağ fotoğraflarında CachedNetworkImage, özel Storage fotoğraflarında kimliğe göre ayrılmış sınırlı byte önbelleği kullanılır. OpenStreetMap karolarının HTTP önbelleği 128 MiB hedefle başlatılır; toplu karo indirme yoktur. [OSM karo politikası](https://operations.osmfoundation.org/policies/tiles/).
+## Kontroller
 
-Yeni testler kuyruk/kimlik/provider davranışını, paylaşım seçimini, profil düzenleme validasyonunu, temel renk kontrastlarını ve kontrollü kamera olayı → önizleme → gerçek kayıt → profil akışını kapsar. Donanım kamerası, gerçek Firebase/FCM/App Check ve platform build’leri ayrıca cihazda doğrulanmalıdır.
+```sh
+flutter analyze
+flutter test
+```
 
-[Firebase kurulumu, test kapsamı ve yayın hazırlığı](docs/release/README.md), [mağaza metinleri](docs/release/store-metadata.tr.md), [changelog](CHANGELOG.md).
+Kullanıcı adı kamera ekranındaki profil düğmesinden veya Profil sekmesinden değiştirilebilir. Yerel profil cihazda saklanır; paylaşım taslakları kullanıcı kimliği ve adını taşır. Sunucu kimlik doğrulaması ve kullanıcı adı benzersizliği henüz bağlı değildir.
 
-Uygulama yeniden kurulursa anonim bulut kimliği kurtarılamayabilir; hesap kurtarma, hesap/veri silme ve UGC moderasyonu mağaza yayını öncesinde tamamlanmalıdır. Yayın için imzalama kimlikleri, gerçek mağaza/politika URL’leri ve Firebase platform dosyaları gerekir.
+## Sekmeler ve profil
+
+Alt menüde Harita, Paylaş (kamera) ve Profil bulunur. Profil düzenleyicisinde kullanıcı adı, galeriden profil fotoğrafı ve Instagram / TikTok / X / YouTube profil adresleri kaydedilir. Sosyal bağlantılar dış uygulamada açılır; OAuth hesap bağlama değildir. Profil ve fotoğraf cihazda saklanır.
+
+Mağaza sayfaları yayınlandığında `--dart-define=APP_STORE_URL=https://apps.apple.com/...` ve `--dart-define=GOOGLE_PLAY_URL=https://play.google.com/store/apps/details?id=...` ile gerçek yayın adreslerini ver. Adres tanımlı değilken ilgili mağaza satırı “Yakında” olarak pasiftir.
+
+Fotoğraf seçimi ve bağlantı açma: [image_picker](https://pub.dev/packages/image_picker), [url_launcher](https://pub.dev/packages/url_launcher).
+
+
