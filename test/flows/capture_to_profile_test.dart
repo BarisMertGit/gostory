@@ -166,7 +166,7 @@ void registerCaptureFlow() {
     await tester.pumpAndSettle();
     expect(find.text('Bu anı yarın da hatırlamak istiyorum.'), findsOneWidget);
     expect(find.text('1 anı'), findsWidgets);
-    expect(find.text('1 şehir'), findsOneWidget);
+    expect(find.bySemanticsLabel('1 şehir'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

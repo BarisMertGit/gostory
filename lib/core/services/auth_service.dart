@@ -14,11 +14,9 @@ class LocalUser {
     required this.username,
     this.photoPath,
     this.bio = '',
-    this.socialLinks = const {},
   });
   final String bio;
   final String? photoPath;
-  final Map<String, String> socialLinks;
   final String uid;
   final String username;
 
@@ -65,8 +63,6 @@ class AuthService {
           photoPath: data['photo'] is String
               ? p.join(file.parent.path, p.basename(data['photo'] as String))
               : null,
-          socialLinks:
-              Map<String, String>.from(data['socialLinks'] as Map? ?? {}),
         );
       }
       final user = LocalUser(
@@ -95,7 +91,6 @@ class AuthService {
         'username': user.username,
         'bio': user.bio,
         'photo': user.photoPath == null ? null : p.basename(user.photoPath!),
-        'socialLinks': user.socialLinks,
       }),
       flush: true,
     );
@@ -111,7 +106,6 @@ class AuthService {
       username: username,
       bio: current.bio,
       photoPath: current.photoPath,
-      socialLinks: current.socialLinks,
     );
     await _save(await _resolveFile(), user);
     _currentUser = user;
@@ -121,7 +115,6 @@ class AuthService {
 
   Future<LocalUser> updateProfile({
     required String username,
-    required Map<String, String> socialLinks,
     String? newPhotoPath,
     String? bio,
     bool removePhoto = false,
@@ -129,15 +122,6 @@ class AuthService {
     final name = username.trim();
     final error = LocalUser.validateUsername(name);
     if (error != null) throw ArgumentError(error);
-    final links = <String, String>{};
-    for (final entry in socialLinks.entries) {
-      final value = entry.value.trim();
-      if (value.isEmpty) continue;
-      if (validateSocialLink(entry.key, value) != null) {
-        throw ArgumentError('Geçersiz bağlantı');
-      }
-      links[entry.key] = value;
-    }
     final current = await signIn();
     final file = await _resolveFile();
     String? photo = removePhoto ? null : current.photoPath;
@@ -154,31 +138,11 @@ class AuthService {
       username: name,
       bio: (bio ?? current.bio).trim(),
       photoPath: photo,
-      socialLinks: Map.unmodifiable(links),
     );
     await _save(file, user);
     _currentUser = user;
     _loading = Future.value(user);
     return user;
-  }
-
-  static String? validateSocialLink(String platform, String value) {
-    if (value.trim().isEmpty) return null;
-    final uri = Uri.tryParse(value.trim());
-    const hosts = {
-      'Instagram': ['instagram.com', 'www.instagram.com'],
-      'TikTok': ['tiktok.com', 'www.tiktok.com'],
-      'X': ['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com'],
-      'YouTube': ['youtube.com', 'www.youtube.com', 'youtu.be'],
-    };
-    if (uri == null ||
-        uri.scheme != 'https' ||
-        uri.userInfo.isNotEmpty ||
-        !(hosts[platform]?.contains(uri.host) ?? false) ||
-        uri.path.length < 2) {
-      return '$platform profilinin https:// bağlantısını gir.';
-    }
-    return null;
   }
 
   Future<void> signOut() async {

@@ -12,6 +12,6 @@ Yasa dışı içerik, taciz, tehdit, nefret söylemi, çocukların istismarı, k
 
 Cihazdaki verilerin için uygun yedekleme önlemlerini al. Bulut yükleme ve silme işlemleri internet erişimine bağlıdır. Anonim oturum bir hesap kurtarma garantisi sağlamaz. Konum bilgisi yanlış veya yaklaşık olabilir; uygulama acil durum veya navigasyon hizmeti değildir.
 
-Üçüncü taraf sosyal bağlantıları ve harita hizmetlerinin kendi koşulları bulunur. Kamera, fotoğraf, konum ve bildirim izinleri isteğe bağlıdır; ilgili özellik izin olmadan kullanılamayabilir.
+Üçüncü taraf harita hizmetlerinin kendi koşulları bulunur. Kamera, fotoğraf, konum ve bildirim izinleri isteğe bağlıdır; ilgili özellik izin olmadan kullanılamayabilir.
 
 Yaş sınırı, hizmetin durdurulması, hesap/veri silme, yasal haklar, sorumluluk sınırları ve uyuşmazlık hükümleri yayıncının faaliyet alanı ve kullanıcıların ülkelerine göre yayın öncesi tamamlanmalıdır. Zorunlu tüketici hakları bu taslakla sınırlandırılmaz.

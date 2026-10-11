@@ -8,11 +8,11 @@ GoStory, fotoğraf, not ve seçtiğin konumla anı arşivi oluşturmanı sağlar
 
 ## İşlenen bilgiler
 
-Cihazında kullanıcı kimliği, kullanıcı adı, biyografi, profil fotoğrafı, sosyal profil bağlantıları, anı fotoğrafları, kısa notlar, seçtiğin koordinatlar, şehir ve oluşturulma zamanı saklanır. Yer işaretleri ve yerel etkileşimler de cihazda tutulur.
+Cihazında kullanıcı kimliği, kullanıcı adı, biyografi, profil fotoğrafı, anı fotoğrafları, kısa notlar, seçtiğin koordinatlar, şehir ve oluşturulma zamanı saklanır. Yer işaretleri ve yerel etkileşimler de cihazda tutulur.
 
 Bulut özelliği etkin bir sürümde Firebase anonim kimlik doğrulaması, Firestore ve Storage kullanılır. Anı fotoğrafları, notlar, konum, görünürlük, profil bilgileri ve etkileşim kayıtları bu hizmetlere iletilir. Profil fotoğrafı mevcut uygulamada buluta yüklenmez. Cihazdaki fotoğraf dosya yolları yayımlanmaz.
 
-Herkese açık olarak seçtiğin anının fotoğrafı, notu ve kesin konumu diğer kullanıcılara gösterilir. Kullanıcı adı, biyografi ve eklediğin sosyal bağlantılar bulut profiline aktarılır. Özel anılar erişim kurallarıyla sahibine ayrılır. Başkaları yayımladığın içeriği cihazlarına kaydetmiş olabilir.
+Herkese açık olarak seçtiğin anının fotoğrafı, notu ve kesin konumu diğer kullanıcılara gösterilir. Kullanıcı adı ve biyografi bulut profiline aktarılır. Özel anılar erişim kurallarıyla sahibine ayrılır. Başkaları yayımladığın içeriği cihazlarına kaydetmiş olabilir.
 
 Bildirimleri etkinleştirdiğinde FCM cihaz anahtarı, bildirim tercihleri ve kimliğin kaydedilir. Yakın anı bildirimini ayrıca açarsan izin verdiğin son cihaz konumu kaydedilir. Yakınlık eşleşmesi son 24 saatte güncellenen konumlar ve 1 km yarıçapla yapılır. Sürekli veya arka planda konum takibi yapılmaz.
 

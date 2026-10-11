@@ -91,7 +91,7 @@ Kullanıcı adı kamera ekranındaki profil düğmesinden veya Profil sekmesinde
 
 ## Sekmeler ve profil
 
-Alt menüde Harita, Paylaş ve Profil bulunur. Profil düzenleyicisinde kullanıcı adı, galeriden profil fotoğrafı ve Instagram / TikTok / X / YouTube profil adresleri kaydedilir. Sosyal bağlantılar dış uygulamada açılır; OAuth hesap bağlama değildir. Profil ve fotoğraf cihazda saklanır.
+Alt menüde Harita, Paylaş ve Profil bulunur. Profil düzenleyicisinde kullanıcı adı, biyografi ve galeriden profil fotoğrafı kaydedilir. Profil ve fotoğraf cihazda saklanır.
 
 Mağaza sayfaları yayınlandığında `--dart-define=APP_STORE_URL=https://apps.apple.com/...` ve `--dart-define=GOOGLE_PLAY_URL=https://play.google.com/store/apps/details?id=...` ile gerçek yayın adreslerini ver. Adres tanımlı değilken ilgili mağaza satırı “Yakında” olarak pasiftir.
 

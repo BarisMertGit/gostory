@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/theme/colors.dart';
 import '../../../../core/services/auth_service.dart';
@@ -9,7 +8,6 @@ import '../../../../shared/models/memory.dart';
 import '../../../../shared/providers/cloud_provider.dart';
 import '../../../../shared/widgets/app_components.dart';
 import '../../../../shared/widgets/memory_tile.dart';
-import '../../../../shared/widgets/social_icon.dart';
 import '../../../memory/presentation/memory_detail_screen.dart';
 
 final publicProfileProvider =
@@ -23,7 +21,6 @@ final publicProfileProvider =
     uid: id,
     username: data['username'] as String,
     bio: data['bio'] as String? ?? '',
-    socialLinks: Map<String, String>.from(data['socialLinks'] as Map? ?? {}),
   );
 });
 
@@ -87,30 +84,6 @@ class PublicProfileScreen extends ConsumerWidget {
                         ?.copyWith(color: AppColors.textSecondary),
                   ),
                 ),
-              for (final entry in user.socialLinks.entries)
-                if (AuthService.validateSocialLink(entry.key, entry.value) ==
-                    null)
-                  ListTile(
-                    leading: SocialIcon(entry.key),
-                    title: Text(entry.key),
-                    subtitle: Text(entry.value),
-                    onTap: () async {
-                      var opened = false;
-                      try {
-                        opened = await launchUrl(
-                          Uri.parse(entry.value),
-                          mode: LaunchMode.externalApplication,
-                        );
-                      } catch (_) {}
-                      if (!opened && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Bağlantı açılamadı.'),
-                          ),
-                        );
-                      }
-                    },
-                  ),
             ] else
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),

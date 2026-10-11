@@ -11,7 +11,7 @@
 - Public/private memory visibility and owner visibility editing.
 - Durable upload/delete queue with revision-safe acknowledgement and connection retries.
 - Optional Firebase initialization, anonymous authentication, Storage/Firestore rules and App Check.
-- Public author profile navigation and validated social links.
+- Public author profile navigation.
 - Unique visitor counts, likes and comments; server counter triggers.
 - Opt-in FCM reply and nearby-memory notifications.
 - Paged cloud discovery, limited profile batches, network image caching and bounded photo/tile caches.

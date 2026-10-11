@@ -54,10 +54,9 @@ service cloud.firestore {
       allow update: if owner(resource.data) && owner(request.resource.data) && validProfile(request.resource.data);
       allow delete: if owner(resource.data);
       function validProfile(data) {
-        return data.keys().hasOnly(['ownerId', 'username', 'bio', 'socialLinks'])
+        return data.keys().hasOnly(['ownerId', 'username', 'bio'])
           && data.username is string && data.username.size() >= 3 && data.username.size() <= 24
-          && data.bio is string && data.bio.size() <= 160 && data.socialLinks is map
-          && data.socialLinks.keys().hasOnly(['Instagram', 'TikTok', 'X', 'YouTube']);
+          && data.bio is string && data.bio.size() <= 160;
       }
     }
     match /notificationDevices/{token} {

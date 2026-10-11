@@ -19,7 +19,6 @@ class _ProfileService extends AuthService {
   @override
   Future<LocalUser> updateProfile({
     required String username,
-    required Map<String, String> socialLinks,
     String? newPhotoPath,
     String? bio,
     bool removePhoto = false,
@@ -28,7 +27,6 @@ class _ProfileService extends AuthService {
       uid: user.uid,
       username: username,
       bio: bio ?? '',
-      socialLinks: socialLinks,
     );
   }
 }
@@ -71,22 +69,10 @@ void main() {
       await tester.tap(find.text('Profili düzenle'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField).at(0), 'deniz_yolda');
-      await tester.tap(find.byTooltip('Sosyal bağlantı ekle'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Instagram'));
-      await tester.pumpAndSettle();
-      await tester.enterText(
-        find.byType(TextFormField).at(2),
-        'https://instagram.com/deniz_yolda',
-      );
       await tester.ensureVisible(find.text('Değişiklikleri kaydet'));
       await tester.tap(find.text('Değişiklikleri kaydet'));
       await tester.pumpAndSettle();
       expect(find.text('@deniz_yolda'), findsOneWidget);
-      expect(
-        service.user.socialLinks['Instagram'],
-        'https://instagram.com/deniz_yolda',
-      );
       await tab('Paylaş');
       expect(find.byType(CameraScreen), findsOneWidget);
       await tab('Profil');

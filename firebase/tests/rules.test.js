@@ -15,10 +15,46 @@ before(async () => {
     storage:{rules:await readFile(new URL('../storage.rules',import.meta.url),'utf8')},
   });
   await env.withSecurityRulesDisabled(async context => {
-    await setDoc(doc(context.firestore(),'profiles/profile-alice'),{ownerId:'alice',username:'alice',bio:'',socialLinks:{}});
+    await setDoc(doc(context.firestore(),'profiles/profile-alice'),{ownerId:'alice',username:'alice',bio:''});
   });
 });
 after(async () => env?.cleanup());
+test('profile replacement preserves supported fields and removes obsolete metadata', async () => {
+  const alice = env.authenticatedContext('alice').firestore();
+  const profile = doc(alice,'profiles/profile-migration');
+  await env.withSecurityRulesDisabled(async context => {
+    await setDoc(doc(context.firestore(),'profiles/profile-migration'),{
+      ownerId:'alice',username:'alice',bio:'Gezgin',obsoleteMetadata:{unused:'value'},
+    });
+  });
+  await assertSucceeds(setDoc(profile,{ownerId:'alice',username:'alice_yolda',bio:'Gezgin'}));
+  const data = (await getDoc(profile)).data();
+  if (JSON.stringify(Object.keys(data).sort()) !== JSON.stringify(['bio','ownerId','username'])) {
+    throw new Error('Profile replacement retained unsupported fields');
+  }
+  await assertSucceeds(updateDoc(profile,{bio:''}));
+  await assertFails(updateDoc(profile,{obsoleteMetadata:{unused:'value'}}));
+});
+
+test('profile ownership, authentication and field limits remain enforced', async () => {
+  const alice = env.authenticatedContext('alice').firestore();
+  const bob = env.authenticatedContext('bob').firestore();
+  const profile = doc(alice,'profiles/profile-validation');
+  const valid = {ownerId:'alice',username:'alice',bio:''};
+  await assertSucceeds(setDoc(profile,valid));
+  await assertSucceeds(getDoc(doc(bob,'profiles/profile-validation')));
+  await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(),'profiles/profile-validation')));
+  await assertFails(updateDoc(doc(bob,'profiles/profile-validation'),{bio:'Unauthorized'}));
+  await assertFails(updateDoc(profile,{ownerId:'bob'}));
+  for (const username of ['ab','a'.repeat(25),123]) {
+    await assertFails(setDoc(profile,{...valid,username}));
+  }
+  for (const bio of ['a'.repeat(161),123]) {
+    await assertFails(setDoc(profile,{...valid,bio}));
+  }
+  await assertSucceeds(setDoc(profile,{...valid,username:'a'.repeat(24),bio:'a'.repeat(160)}));
+});
+
 test('owner-only writes, public query, private access and protected counters', async () => {
   const alice = env.authenticatedContext('alice').firestore();
   const bob = env.authenticatedContext('bob').firestore();
@@ -43,7 +79,7 @@ test('visitors cannot spoof visit, like or comment authors', async () => {
   const alice = env.authenticatedContext('alice').firestore();
   const bob = env.authenticatedContext('bob').firestore();
   await setDoc(doc(alice,'memories/social'),memory('social',true));
-  await setDoc(doc(bob,'profiles/profile-bob'),{ownerId:'bob',username:'bob',bio:'',socialLinks:{}});
+  await setDoc(doc(bob,'profiles/profile-bob'),{ownerId:'bob',username:'bob',bio:''});
   await assertSucceeds(setDoc(doc(bob,'memories/social/views/bob'),{createdAt:serverTimestamp()}));
   await assertFails(setDoc(doc(bob,'memories/social/views/alice'),{createdAt:serverTimestamp()}));
   await assertFails(setDoc(doc(bob,'memories/social/views/bob'),{createdAt:serverTimestamp()}));
@@ -70,7 +106,7 @@ test('storage photos follow visibility and owner path', async () => {
 test('first device registration can check a missing token and is owner-protected', async () => {
   const alice = env.authenticatedContext('alice').firestore();
   const bob = env.authenticatedContext('bob').firestore();
-  await setDoc(doc(alice,'profiles/profile-alice'),{ownerId:'alice',username:'alice',bio:'',socialLinks:{}});
+  await setDoc(doc(alice,'profiles/profile-alice'),{ownerId:'alice',username:'alice',bio:''});
   await assertSucceeds(getDoc(doc(alice,'notificationDevices/new-token')));
   await assertSucceeds(setDoc(doc(alice,'notificationDevices/new-token'),{
     ownerId:'alice',profileId:'profile-alice',token:'new-token',replies:true,nearby:false,updatedAt:serverTimestamp(),

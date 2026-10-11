@@ -37,7 +37,6 @@ final recoveredProfilePhotoProvider = FutureProvider<String?>((ref) async {
   final user = await service.signIn();
   await service.updateProfile(
     username: user.username,
-    socialLinks: user.socialLinks,
     newPhotoPath: image.path,
   );
   ref.invalidate(authStateProvider);

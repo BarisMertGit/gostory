@@ -64,7 +64,6 @@ class CloudService {
       'ownerId': owner,
       'username': user.username,
       'bio': user.bio,
-      'socialLinks': user.socialLinks,
     });
   }
 

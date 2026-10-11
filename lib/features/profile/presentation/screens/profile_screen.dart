@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/navigation.dart';
 import '../../../../app/theme/colors.dart';
@@ -22,12 +21,9 @@ import '../../../../shared/widgets/app_components.dart';
 import '../../../../shared/widgets/content_placeholder.dart';
 import '../../../../shared/widgets/memory_tile.dart';
 import '../../../../shared/widgets/motion_widgets.dart';
-import '../../../../shared/widgets/social_icon.dart';
 import '../../../map/presentation/providers/map_provider.dart';
 import '../../../memory/presentation/memory_detail_screen.dart';
 import 'notification_settings_screen.dart';
-
-const _socialPlatforms = ['Instagram', 'TikTok', 'X', 'YouTube'];
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -44,29 +40,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         backgroundColor: AppColors.surface,
         builder: (_) => _ProfileEditor(user: user),
       );
-  Future<void> _open(String url) async {
-    try {
-      if (await launchUrl(
-        Uri.parse(url),
-        mode: LaunchMode.externalApplication,
-      )) {
-        return;
-      }
-    } catch (error, stack) {
-      AppLogger.error(
-        'İşlem başarısız.',
-        tag: 'profile_screen',
-        error: error.runtimeType,
-        stackTrace: stack,
-      ); /* Display recoverable feedback below. */
-    }
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bağlantı açılamadı. Tekrar dene.')),
-      );
-    }
-  }
-
   void _settings(LocalUser user) {
     showModalBottomSheet<void>(
       context: context,
@@ -184,11 +157,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 SliverAppBar(
                   pinned: true,
                   automaticallyImplyLeading: false,
-                  toolbarHeight:
-                      MediaQuery.textScalerOf(context).scale(28) * 1.2 + 16,
-                  expandedHeight: 270 +
-                      (MediaQuery.textScalerOf(context).scale(28) - 28)
-                          .clamp(0.0, double.infinity),
+                  toolbarHeight: kToolbarHeight,
+                  expandedHeight: 220,
                   actions: [
                     IconButton(
                       tooltip: 'Ayarlar',
@@ -217,15 +187,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               bottom: 50,
                               child: ProfileCover(),
                             ),
-                          Positioned(
-                            left: 20,
-                            right: 64,
-                            bottom: expanded ? 68 : 12,
-                            child: Text(
-                              'Profil',
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                          ),
                           if (expanded)
                             Positioned(
                               bottom: 0,
@@ -255,7 +216,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           cityCount:
                               memories == null ? 0 : _cityCount(memories),
                           onEdit: () => _edit(user),
-                          onOpenLink: _open,
                         ),
                         if (sync != null)
                           Padding(
@@ -388,13 +348,11 @@ class _ProfileSummary extends StatelessWidget {
     required this.memoryCount,
     required this.cityCount,
     required this.onEdit,
-    required this.onOpenLink,
   });
   final LocalUser user;
   final int? memoryCount;
   final int cityCount;
   final VoidCallback onEdit;
-  final ValueChanged<String> onOpenLink;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -450,31 +408,6 @@ class _ProfileSummary extends StatelessWidget {
                 onPressed: onEdit,
               ),
             ),
-            if (user.socialLinks.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.md),
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: [
-                    for (final link in user.socialLinks.entries)
-                      PressFeedback(
-                        child: DecoratedBox(
-                          decoration: const BoxDecoration(
-                            color: AppColors.accentGlow,
-                            shape: BoxShape.circle,
-                          ),
-                          child: IconButton(
-                            tooltip: link.key,
-                            onPressed: () => onOpenLink(link.value),
-                            icon: SocialIcon(link.key),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
           ],
         ),
       );
@@ -664,12 +597,7 @@ class _ProfileEditor extends ConsumerStatefulWidget {
 class _ProfileEditorState extends ConsumerState<_ProfileEditor> {
   final _form = GlobalKey<FormState>();
   late final _username = TextEditingController(text: widget.user.username);
-  late final _links = {
-    for (final name in _socialPlatforms)
-      name: TextEditingController(text: widget.user.socialLinks[name] ?? ''),
-  };
   late final _bio = TextEditingController(text: widget.user.bio);
-  late final Set<String> _visibleLinks = widget.user.socialLinks.keys.toSet();
   String? _newPhoto;
   String? _error;
   bool _removePhoto = false;
@@ -679,9 +607,6 @@ class _ProfileEditorState extends ConsumerState<_ProfileEditor> {
   void dispose() {
     _username.dispose();
     _bio.dispose();
-    for (final controller in _links.values) {
-      controller.dispose();
-    }
     super.dispose();
   }
 
@@ -734,8 +659,6 @@ class _ProfileEditorState extends ConsumerState<_ProfileEditor> {
       await ref.read(authServiceProvider).updateProfile(
             username: _username.text,
             bio: _bio.text,
-            socialLinks: _links
-                .map((name, controller) => MapEntry(name, controller.text)),
             newPhotoPath: _newPhoto,
             removePhoto: _removePhoto,
           );
@@ -831,7 +754,7 @@ class _ProfileEditorState extends ConsumerState<_ProfileEditor> {
                 ),
                 const SizedBox(height: 18),
                 const Text(
-                  'Bulut bağlantısı etkin olduğunda kullanıcı adın, biyografin ve sosyal bağlantıların diğer kullanıcılara görünür.',
+                  'Bulut bağlantısı etkin olduğunda kullanıcı adın ve biyografin diğer kullanıcılara görünür.',
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -856,53 +779,6 @@ class _ProfileEditorState extends ConsumerState<_ProfileEditor> {
                     hintText: 'Kendinden kısaca bahset',
                   ),
                 ),
-                PopupMenuButton<String>(
-                  tooltip: 'Sosyal bağlantı ekle',
-                  enabled:
-                      !_busy && _visibleLinks.length < _socialPlatforms.length,
-                  onSelected: (name) => setState(() => _visibleLinks.add(name)),
-                  itemBuilder: (_) => [
-                    for (final name in _socialPlatforms)
-                      if (!_visibleLinks.contains(name))
-                        PopupMenuItem(value: name, child: Text(name)),
-                  ],
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 48),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.add_link, color: AppColors.peach),
-                        SizedBox(width: 8),
-                        Text(
-                          'Sosyal bağlantı ekle',
-                          style: TextStyle(color: AppColors.peach),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                for (final entry in _links.entries
-                    .where((e) => _visibleLinks.contains(e.key)))
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: TextFormField(
-                      controller: entry.value,
-                      enabled: !_busy,
-                      keyboardType: TextInputType.url,
-                      autocorrect: false,
-                      decoration: InputDecoration(
-                        labelText: entry.key,
-                        hintText: 'https://…',
-                        prefixIcon: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: SocialIcon(entry.key),
-                        ),
-                      ),
-                      validator: (value) => AuthService.validateSocialLink(
-                        entry.key,
-                        value ?? '',
-                      ),
-                    ),
-                  ),
                 if (_error != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
