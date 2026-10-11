@@ -94,7 +94,7 @@ class DiscoveryMapState extends State<DiscoveryMap> {
               widget.hasUserLocation || widget.memories.isNotEmpty ? 13 : 2,
           minZoom: 2,
           maxZoom: 19,
-          backgroundColor: const Color(0xFF242E2B),
+          backgroundColor: AppColors.mapSurface,
           onMapReady: () {
             _ready = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -143,7 +143,7 @@ class DiscoveryMapState extends State<DiscoveryMap> {
                           padding: const EdgeInsets.all(7),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: AppColors.onPeach,
+                              color: AppColors.surface,
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: AppColors.peach,
@@ -239,7 +239,7 @@ class DiscoveryMapState extends State<DiscoveryMap> {
                         ),
                       )
                     : Icon(
-                        Icons.photo_camera_outlined,
+                        Icons.photo_library_outlined,
                         size: 19,
                         color: selected ? AppColors.onPeach : AppColors.peach,
                       ),

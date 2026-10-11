@@ -154,7 +154,7 @@ class _CameraNavigationIcon extends StatelessWidget {
             ],
           ),
           child: Icon(
-            selected ? Icons.camera_alt : Icons.camera_alt_outlined,
+            selected ? Icons.add : Icons.add_outlined,
             color: AppColors.onPeach,
           ),
         ),

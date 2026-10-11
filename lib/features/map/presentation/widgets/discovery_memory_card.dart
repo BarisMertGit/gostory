@@ -61,11 +61,13 @@ class DiscoveryMemoryCard extends StatelessWidget {
                       : const [],
                 ),
                 child: Material(
-                  color: AppColors.surfaceVariant,
+                  color: selected ? AppColors.surfaceElevated : AppColors.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadii.card),
                     side: BorderSide(
-                      color: selected ? AppColors.peach : AppColors.divider,
+                      color: selected
+                          ? AppColors.peach.withValues(alpha: .8)
+                          : AppColors.divider.withValues(alpha: .65),
                       width: 1,
                     ),
                   ),

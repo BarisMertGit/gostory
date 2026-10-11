@@ -238,16 +238,19 @@ class _SplashScreenState extends State<SplashScreen>
                                 if (!_shimmerController.isAnimating &&
                                     _shimmerController.value == 0) {
                                   return const LinearGradient(
-                                    colors: [Colors.white, Colors.white],
+                                    colors: [
+                                      AppColors.textPrimary,
+                                      AppColors.textPrimary,
+                                    ],
                                   ).createShader(bounds);
                                 }
                                 return LinearGradient(
                                   begin: Alignment.centerLeft,
                                   end: Alignment.centerRight,
                                   colors: const [
-                                    Colors.white,
-                                    Color(0xFFF5D4B3),
-                                    Colors.white,
+                                    AppColors.textPrimary,
+                                    AppColors.peach,
+                                    AppColors.textPrimary,
                                   ],
                                   stops: [
                                     math.max(

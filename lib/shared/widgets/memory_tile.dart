@@ -34,7 +34,11 @@ class MemoryTile extends StatelessWidget {
       style: Theme.of(context)
           .textTheme
           .bodyLarge
-          ?.copyWith(fontWeight: FontWeight.w500, height: 1.5),
+          ?.copyWith(
+            color: largeText ? AppColors.textPrimary : Colors.white,
+            fontWeight: FontWeight.w500,
+            height: 1.5,
+          ),
     );
     return PressFeedback(
       child: Card(

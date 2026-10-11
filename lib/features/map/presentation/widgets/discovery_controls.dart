@@ -35,17 +35,19 @@ class DiscoveryControls extends StatelessWidget {
         icon: Icon(icon, size: 21),
         style: IconButton.styleFrom(
           minimumSize: const Size.square(AppSizes.touchTarget),
-          foregroundColor: AppColors.textPrimary,
+          foregroundColor: icon == Icons.my_location
+              ? AppColors.secondary
+              : AppColors.textPrimary,
         ),
       );
 
   Widget _surface(Widget child) => Material(
-        color: AppColors.surface,
-        elevation: 2,
-        shadowColor: Colors.black26,
+        color: AppColors.surfaceElevated,
+        elevation: 1,
+        shadowColor: AppColors.background,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.control),
-          side: const BorderSide(color: AppColors.divider),
+          side: BorderSide(color: AppColors.divider.withValues(alpha: .65)),
         ),
         clipBehavior: Clip.antiAlias,
         child: child,
@@ -76,7 +78,7 @@ class DiscoveryControls extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.gap),
               _surface(locate),
             ],
           );

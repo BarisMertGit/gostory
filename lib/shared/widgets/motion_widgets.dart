@@ -129,7 +129,13 @@ class AvatarRing extends StatelessWidget {
               AppColors.surfaceElevated,
             ],
           ),
-          boxShadow: [BoxShadow(color: AppColors.peachGlow, blurRadius: 12)],
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.peachGlow,
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
+          ],
         ),
         child: Padding(padding: const EdgeInsets.all(2), child: child),
       );
@@ -216,4 +222,128 @@ class ParallaxPhoto extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A small memory postcard with a context-specific symbol, drawn locally.
+class EmptyStateIllustration extends StatelessWidget {
+  const EmptyStateIllustration({super.key, required this.icon});
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+        child: SizedBox(
+          width: 132,
+          height: 112,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Transform.rotate(
+                angle: -.12,
+                child: Container(
+                  width: 94,
+                  height: 86,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceVariant,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.secondary),
+                  ),
+                ),
+              ),
+              Transform.rotate(
+                angle: .08,
+                child: Container(
+                  width: 90,
+                  height: 86,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceElevated,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.peach),
+                  ),
+                  child: Icon(icon, size: 38, color: AppColors.peach),
+                ),
+              ),
+              const Positioned(
+                right: 4,
+                top: 0,
+                child: Icon(
+                  Icons.auto_awesome,
+                  size: 24,
+                  color: AppColors.secondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+class ProfileCover extends StatelessWidget {
+  const ProfileCover({super.key});
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+        child: ClipRect(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.surfaceElevated,
+                      AppColors.gradientStart,
+                      AppColors.background,
+                    ],
+                  ),
+                ),
+              ),
+              CustomPaint(painter: _ProfileCoverPainter()),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: FractionallySizedBox(
+                  heightFactor: .38,
+                  widthFactor: 1,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppColors.background.withValues(alpha: 0),
+                          AppColors.background,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+class _ProfileCoverPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final line = Paint()
+      ..color = AppColors.secondary.withValues(alpha: .25)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    for (var i = 0; i < 10; i++) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(size.width * .82, -size.height * .25),
+          width: 90 + i * 64,
+          height: 60 + i * 48,
+        ),
+        line,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ProfileCoverPainter oldDelegate) => false;
 }

@@ -41,7 +41,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         context: context,
         isScrollControlled: true,
         useSafeArea: true,
-        backgroundColor: AppColors.mapSurface,
+        backgroundColor: AppColors.surface,
         builder: (_) => _ProfileEditor(user: user),
       );
   Future<void> _open(String url) async {
@@ -72,7 +72,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
-      backgroundColor: AppColors.mapSurface,
+      backgroundColor: AppColors.surface,
       builder: (sheetContext) => SafeArea(
         child: ListView(
           shrinkWrap: true,
@@ -186,31 +186,61 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   automaticallyImplyLeading: false,
                   toolbarHeight:
                       MediaQuery.textScalerOf(context).scale(28) * 1.2 + 16,
-                  expandedHeight:
-                      MediaQuery.textScalerOf(context).scale(28) * 1.2 + 60,
+                  expandedHeight: 270 +
+                      (MediaQuery.textScalerOf(context).scale(28) - 28)
+                          .clamp(0.0, double.infinity),
                   actions: [
                     IconButton(
                       tooltip: 'Ayarlar',
                       onPressed: () => _settings(user),
+                      style: IconButton.styleFrom(
+                        foregroundColor: AppColors.textPrimary,
+                        backgroundColor: AppColors.surfaceElevated,
+                        side: const BorderSide(color: AppColors.divider),
+                      ),
                       icon: const Icon(Icons.settings_outlined),
                     ),
                   ],
-                  flexibleSpace: FlexibleSpaceBar(
-                    titlePadding: const EdgeInsets.fromLTRB(20, 0, 64, 12),
-                    expandedTitleScale: 1,
-                    title: Text(
-                      'Profil',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    background: const DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [AppColors.gradientEnd, AppColors.background],
-                        ),
-                      ),
-                    ),
+                  flexibleSpace: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final expanded = constraints.maxHeight > 160;
+                      return Stack(
+                        children: [
+                          const Positioned.fill(
+                            child: ColoredBox(color: AppColors.background),
+                          ),
+                          if (expanded)
+                            const Positioned(
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 50,
+                              child: ProfileCover(),
+                            ),
+                          Positioned(
+                            left: 20,
+                            right: 64,
+                            bottom: expanded ? 68 : 12,
+                            child: Text(
+                              'Profil',
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                          ),
+                          if (expanded)
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: _ProfileAvatar(
+                                  user: user,
+                                  onEdit: () => _edit(user),
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
                   ),
                 ),
                 SliverPadding(
@@ -244,12 +274,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 'Arşiv yenilenemedi. Kayıtlı anıların gösteriliyor.',
                             kind: StatusKind.error,
                           ),
+                        const SizedBox(height: AppSpacing.xl),
+                        const Divider(height: 1),
                         const SizedBox(height: AppSpacing.lg),
                         SectionHeading(
                           title: 'Anılarım',
                           count: memories?.length,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.lg),
                       ],
                     ),
                   ),
@@ -365,85 +397,159 @@ class _ProfileSummary extends StatelessWidget {
   final ValueChanged<String> onOpenLink;
 
   @override
-  Widget build(BuildContext context) {
-    final avatar = Tooltip(
-      message: 'Profil fotoğrafını değiştir',
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onEdit,
-        child: Semantics(
-          button: true,
-          label: 'Profil fotoğrafını değiştir',
-          child: _Avatar(
-            path: user.photoPath,
-            username: user.username,
-            size: AppSizes.avatar,
-          ),
-        ),
-      ),
-    );
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ProfileIdentity(username: user.username, avatar: avatar),
-          if (memoryCount != null) ...[
-            const SizedBox(height: AppSpacing.gap),
-            Wrap(
-              spacing: 16,
-              runSpacing: 8,
-              children: [
-                AnimatedCounter(
-                  value: memoryCount!,
-                  label: 'anı',
-                  icon: Icons.photo_library_outlined,
-                ),
-                if (cityCount > 0)
-                  AnimatedCounter(
-                    value: cityCount,
-                    label: 'şehir',
-                    icon: Icons.location_city_outlined,
-                  ),
-              ],
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              '@${user.username}',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge,
             ),
-          ],
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            user.bio.isEmpty ? 'Kendinden kısaca bahset' : user.bio,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(shape: const StadiumBorder()),
-            label: const Text('Profili düzenle'),
-            icon: const Icon(Icons.edit_outlined, size: 16),
-            onPressed: onEdit,
-          ),
-          if (user.socialLinks.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.sm),
-              child: Wrap(
-                spacing: AppSpacing.xs,
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              user.bio.isEmpty ? 'Kendinden kısaca bahset' : user.bio,
+              textAlign: TextAlign.center,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: AppColors.textSecondary),
+            ),
+            if (memoryCount != null) ...[
+              const SizedBox(height: AppSpacing.lg),
+              Row(
                 children: [
-                  for (final link in user.socialLinks.entries)
-                    PressFeedback(
-                      child: IconButton(
-                        tooltip: link.key,
-                        onPressed: () => onOpenLink(link.value),
-                        icon: SocialIcon(link.key),
-                      ),
+                  Expanded(
+                    child: _ProfileStatCard(
+                      value: memoryCount!,
+                      label: 'anı',
+                      icon: Icons.photo_library_outlined,
+                      color: AppColors.peach,
                     ),
+                  ),
+                  const SizedBox(width: AppSpacing.gap),
+                  Expanded(
+                    child: _ProfileStatCard(
+                      value: cityCount,
+                      label: 'şehir',
+                      icon: Icons.location_city_outlined,
+                      color: AppColors.secondary,
+                    ),
+                  ),
                 ],
               ),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: SecondaryAction(
+                label: 'Profili düzenle',
+                icon: Icons.edit_outlined,
+                onPressed: onEdit,
+              ),
             ),
-        ],
-      ),
-    );
-  }
+            if (user.socialLinks.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.md),
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    for (final link in user.socialLinks.entries)
+                      PressFeedback(
+                        child: DecoratedBox(
+                          decoration: const BoxDecoration(
+                            color: AppColors.accentGlow,
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            tooltip: link.key,
+                            onPressed: () => onOpenLink(link.value),
+                            icon: SocialIcon(link.key),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  const _ProfileAvatar({required this.user, required this.onEdit});
+
+  final LocalUser user;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) => AvatarRing(
+        child: Tooltip(
+          message: 'Profil fotoğrafını değiştir',
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onEdit,
+            child: Semantics(
+              button: true,
+              label: 'Profil fotoğrafını değiştir',
+              child: _Avatar(
+                path: user.photoPath,
+                username: user.username,
+                size: 96,
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+class _ProfileStatCard extends StatelessWidget {
+  const _ProfileStatCard({
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+
+  final int value;
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        label: '$value $label',
+        child: ExcludeSemantics(
+          child: SurfacePanel(
+            outlined: true,
+            child: Column(
+              children: [
+                Icon(icon, color: color, size: 22),
+                const SizedBox(height: AppSpacing.sm),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: value.toDouble()),
+                  duration: AppMotion.duration(context, AppMotion.slow),
+                  curve: AppMotion.standardCurve,
+                  builder: (context, count, _) => Text(
+                    '${count.round()}',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
 }
 
 class _ProfileMemoryCard extends ConsumerWidget {

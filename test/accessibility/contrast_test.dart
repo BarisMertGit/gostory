@@ -15,6 +15,7 @@ void main() {
       AppColors.surface,
       AppColors.card,
       AppColors.surfaceVariant,
+      AppColors.surfaceElevated,
     ]) {
       for (final foreground in [
         AppColors.textPrimary,
@@ -22,12 +23,17 @@ void main() {
         AppColors.textTertiary,
         AppColors.textHint,
         AppColors.error,
+        AppColors.secondary,
       ]) {
         expect(contrast(foreground, background), greaterThanOrEqualTo(4.5));
       }
     }
     expect(
       contrast(AppColors.onPeach, AppColors.peach),
+      greaterThanOrEqualTo(4.5),
+    );
+    expect(
+      contrast(AppColors.onPeach, AppColors.peachLight),
       greaterThanOrEqualTo(4.5),
     );
   });

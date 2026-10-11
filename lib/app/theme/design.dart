@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppRadii {
-  static const small = 12.0;
-  static const control = 14.0;
-  static const card = 20.0;
-  static const sheet = 28.0;
+  static const small = 14.0;
+  static const control = 18.0;
+  static const card = 24.0;
+  static const sheet = 32.0;
 }
 
 abstract final class AppSizes {

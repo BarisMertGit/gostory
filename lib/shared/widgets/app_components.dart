@@ -115,12 +115,12 @@ class SurfacePanel extends StatelessWidget {
     if (glass) return GlassSurface(child: content);
     return Material(
       color: elevated ? AppColors.surfaceElevated : AppColors.surface,
-      elevation: elevated ? 2 : 0,
-      shadowColor: Colors.black26,
+      elevation: elevated ? 1 : 0,
+      shadowColor: AppColors.background.withValues(alpha: .35),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.card),
         side: outlined
-            ? const BorderSide(color: AppColors.divider)
+            ? BorderSide(color: AppColors.divider.withValues(alpha: .7))
             : BorderSide.none,
       ),
       clipBehavior: Clip.antiAlias,
@@ -177,7 +177,9 @@ class PrimaryAction extends StatelessWidget {
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: AppColors.textSecondary,),
+                            strokeWidth: 2,
+                            color: AppColors.textSecondary,
+                          ),
                         )
                       : Icon(icon, size: 20),
                   label: text,
@@ -270,7 +272,7 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const JournalIllustration(size: 112),
+            EmptyStateIllustration(icon: icon),
             const SizedBox(height: AppSpacing.md),
             Text(
               title,
@@ -313,7 +315,8 @@ class FilterControl extends StatelessWidget {
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadii.control),
+          borderRadius: BorderRadius.circular(AppRadii.card),
+          border: Border.all(color: AppColors.divider.withValues(alpha: .6)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xs),
@@ -322,10 +325,11 @@ class FilterControl extends StatelessWidget {
               Positioned.fill(
                 child: AnimatedAlign(
                   alignment: AlignmentDirectional(
-                      labels.length == 1
-                          ? 0
-                          : -1 + 2 * selected / (labels.length - 1),
-                      0,),
+                    labels.length == 1
+                        ? 0
+                        : -1 + 2 * selected / (labels.length - 1),
+                    0,
+                  ),
                   duration: AppMotion.duration(context, AppMotion.emphasized),
                   curve: AppMotion.standardCurve,
                   child: FractionallySizedBox(
@@ -333,9 +337,10 @@ class FilterControl extends StatelessWidget {
                     heightFactor: 1,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(AppRadii.small),
+                        borderRadius: BorderRadius.circular(AppRadii.card - 4),
                         gradient: const LinearGradient(
-                            colors: [AppColors.peachLight, AppColors.peach],),
+                          colors: [AppColors.peachLight, AppColors.peach],
+                        ),
                       ),
                     ),
                   ),
@@ -354,9 +359,13 @@ class FilterControl extends StatelessWidget {
                             onPressed: () => onSelected(index),
                             style: TextButton.styleFrom(
                               animationDuration: AppMotion.duration(context),
+                              minimumSize: const Size(44, 44),
+                              shape: const StadiumBorder(),
+                              backgroundColor: Colors.transparent,
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.xs,
-                                  vertical: AppSpacing.sm,),
+                                horizontal: AppSpacing.xs,
+                                vertical: AppSpacing.sm,
+                              ),
                               foregroundColor: selected == index
                                   ? AppColors.onPeach
                                   : AppColors.textSecondary,
@@ -369,8 +378,10 @@ class FilterControl extends StatelessWidget {
                                         : FontWeight.w500,
                                   ),
                             ),
-                            child: Text(labels[index],
-                                textAlign: TextAlign.center,),
+                            child: Text(
+                              labels[index],
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ),
@@ -401,12 +412,19 @@ class MemoryInfo extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.location_on_outlined,
-                    size: 14, color: AppColors.textSecondary,),
+                const Icon(
+                  Icons.location_on_outlined,
+                  size: 14,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 4),
                 Expanded(
-                    child: Text(memory.locationLabel,
-                        maxLines: 2, overflow: TextOverflow.ellipsis,),),
+                  child: Text(
+                    memory.locationLabel,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -415,12 +433,14 @@ class MemoryInfo extends StatelessWidget {
               runSpacing: AppSpacing.xs,
               children: [
                 InfoLabel(
-                    icon: Icons.calendar_today_outlined,
-                    label: memoryDateLabel(memory.createdAt),),
+                  icon: Icons.calendar_today_outlined,
+                  label: memoryDateLabel(memory.createdAt),
+                ),
                 if (distance != null)
                   InfoLabel(
-                      icon: Icons.near_me_outlined,
-                      label: memoryDistanceLabel(distance!),),
+                    icon: Icons.near_me_outlined,
+                    label: memoryDistanceLabel(distance!),
+                  ),
               ],
             ),
           ],
@@ -497,7 +517,9 @@ class SettingsRow extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: const BoxDecoration(
-              color: AppColors.accentGlow, shape: BoxShape.circle,),
+            color: AppColors.accentGlow,
+            shape: BoxShape.circle,
+          ),
           child: Icon(icon, color: AppColors.peach, size: 20),
         ),
         title: Text(title, style: Theme.of(context).textTheme.titleSmall),

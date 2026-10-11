@@ -246,11 +246,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                         child: IgnorePointer(
                           child: BackdropFilter(
                             filter: ImageFilter.blur(
-                                sigmaX: 2 * visibleExtent,
-                                sigmaY: 2 * visibleExtent,),
+                              sigmaX: 2 * visibleExtent,
+                              sigmaY: 2 * visibleExtent,
+                            ),
                             child: ColoredBox(
-                                color: AppColors.background
-                                    .withValues(alpha: .06),),
+                              color:
+                                  AppColors.background.withValues(alpha: .06),
+                            ),
                           ),
                         ),
                       ),
@@ -267,7 +269,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                   (MediaQuery.textScalerOf(context).scale(12) >
                                           18
                                       ? 340
-                                      : 120))
+                                      : 200))
                             const LocationPermissionBand(inset: false),
                           Expanded(
                             child: LayoutBuilder(
@@ -301,7 +303,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                           constraints: BoxConstraints(
                             maxWidth: constraints.maxWidth - 96,
                           ),
-                          child: LeaveMemoryButton(onPressed: _share),
+                          child: Opacity(
+                            opacity:
+                                ((_mapHeight * (1 - visibleExtent) - 200) / 80)
+                                    .clamp(0.0, 1.0),
+                            child: LeaveMemoryButton(onPressed: _share),
+                          ),
                         ),
                       ),
                     NotificationListener<DraggableScrollableNotification>(
@@ -346,10 +353,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                     onTap: () => _expand(!expanded),
                                   ),
                                 ),
-                                if (expanded)
-                                  const SliverToBoxAdapter(
-                                    child: LocationPermissionBand(),
-                                  ),
+                                const SliverToBoxAdapter(
+                                  child: LocationPermissionBand(),
+                                ),
                                 if (nearby.isEmpty)
                                   SliverToBoxAdapter(
                                     child: EmptyState(
@@ -389,7 +395,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                             memory: nearby[index],
                                             distance: state.hasUserLocation
                                                 ? _distance(
-                                                    nearby[index], state,)
+                                                    nearby[index],
+                                                    state,
+                                                  )
                                                 : null,
                                             selected:
                                                 nearby[index].id == _selectedId,

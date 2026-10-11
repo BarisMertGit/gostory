@@ -6,24 +6,24 @@ import 'design.dart';
 import 'typography.dart' as app_type;
 
 abstract final class AppTheme {
-  static ThemeData get dark {
+  static ThemeData get light {
     final base = ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       fontFamily: app_type.AppTypography.body,
     );
     const text = TextTheme(
       headlineMedium: TextStyle(
         fontFamily: app_type.AppTypography.heading,
-        fontSize: 28,
-        fontWeight: FontWeight.w700,
+        fontSize: 27,
+        fontWeight: FontWeight.w600,
         height: 1.2,
         letterSpacing: -.5,
       ),
       headlineSmall: TextStyle(
         fontFamily: app_type.AppTypography.heading,
-        fontSize: 28,
-        fontWeight: FontWeight.w700,
+        fontSize: 27,
+        fontWeight: FontWeight.w600,
         height: 1.2,
       ),
       titleLarge: TextStyle(
@@ -84,12 +84,12 @@ abstract final class AppTheme {
     );
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.background,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: const ColorScheme.light(
         surface: AppColors.surface,
         surfaceContainer: AppColors.surfaceVariant,
         primary: AppColors.peach,
         onPrimary: AppColors.onPeach,
-        secondary: AppColors.peach,
+        secondary: AppColors.secondary,
         onSecondary: AppColors.onPeach,
         onSurface: AppColors.textPrimary,
         onSurfaceVariant: AppColors.textSecondary,
@@ -110,11 +110,11 @@ abstract final class AppTheme {
         titleSpacing: 20,
         titleTextStyle: TextStyle(
           fontFamily: app_type.AppTypography.heading,
-          fontSize: 28,
-          fontWeight: FontWeight.w700,
+          fontSize: 27,
+          fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        systemOverlayStyle: SystemUiOverlayStyle.light,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -170,11 +170,10 @@ abstract final class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
-        shadowColor: AppColors.peach.withValues(alpha: 0.08),
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.card),
-          side: const BorderSide(color: AppColors.divider),
+          side: BorderSide(color: AppColors.divider.withValues(alpha: .65)),
         ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
@@ -183,6 +182,13 @@ abstract final class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius:
               BorderRadius.vertical(top: Radius.circular(AppRadii.sheet)),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surfaceElevated,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.card),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -254,4 +260,7 @@ abstract final class AppTheme {
       ),
     );
   }
+
+  // Existing widget tests use this entry point; keep it mapped to the app theme.
+  static ThemeData get dark => light;
 }

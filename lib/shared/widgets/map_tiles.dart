@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 
-/// Retain the existing OSM raster tiles and their readable luminance. Only
-/// saturation is reduced (55%); labels, roads and attribution are not dimmed.
+/// Soft daylight treatment retaining the OSM provider and attribution.
+/// Reducing saturation and lifting shadows keeps roads readable beside warm UI.
+/// Alpha is preserved so tiles still compose normally while loading.
 Widget mapTileBuilder(BuildContext context, Widget tile, TileImage image) =>
     ColorFiltered(
       colorFilter: const ColorFilter.matrix([
-        .64567,
-        .32184,
-        .03249,
+        .55,
+        .16,
+        .05,
         0,
+        48,
+        .11,
+        .60,
+        .05,
         0,
-        .09567,
-        .87184,
-        .03249,
+        46,
+        .10,
+        .22,
+        .38,
         0,
-        0,
-        .09567,
-        .32184,
-        .58249,
-        0,
-        0,
+        55,
         0,
         0,
         0,

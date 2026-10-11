@@ -78,10 +78,10 @@ class GoStoryApp extends ConsumerWidget {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarBrightness: Brightness.dark,
-        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.light,
+        statusBarIconBrightness: Brightness.dark,
         systemNavigationBarColor: AppColors.surface,
-        systemNavigationBarIconBrightness: Brightness.light,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
     );
 
@@ -91,7 +91,7 @@ class GoStoryApp extends ConsumerWidget {
       scaffoldMessengerKey: _messengerKey,
       navigatorObservers: [appRouteObserver],
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
       home: const OnboardingGate(),
       onGenerateRoute: app_router.generateRoute,
     );

@@ -318,7 +318,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
               title: 'Bir anı paylaş',
               trailing: widget.embedded ? null : const BackButton(),
             ),
-            if (!ready || MediaQuery.textScalerOf(context).scale(14) > 18.2)
+            if (ready && MediaQuery.textScalerOf(context).scale(14) > 18.2)
               const Padding(
                 padding: EdgeInsets.fromLTRB(
                   AppSpacing.screenPadding,
@@ -519,7 +519,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                         ],
                       ),
                     )
-                  : AdaptiveStateBody(
+                  : SingleChildScrollView(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.screenPadding,
                         AppSpacing.sm,
@@ -544,7 +544,27 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                                   ),
                                 ),
                               )
-                            : _starter(state),
+                            : SurfacePanel(
+                                outlined: true,
+                                padding: const EdgeInsets.all(AppSpacing.lg),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    const Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: LocationChip(),
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: AppSpacing.md,
+                                      ),
+                                      child: Divider(),
+                                    ),
+                                    _starter(state),
+                                  ],
+                                ),
+                              ),
                       ),
                     ),
             ),
